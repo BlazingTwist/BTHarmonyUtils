@@ -213,12 +213,11 @@ namespace BTHarmonyUtils.TranspilerUtils {
 				Apply(instructions);
 			} catch (InvalidDataException e) {
 				if (markerMethodInfo != null) {
-					logger.LogError($"Patching with MarkerMethod {markerMethodInfo.Name} caused error: {e.Message}");	
+					logger.LogError($"Patching with MarkerMethod {markerMethodInfo.Name} caused error: {e.Message}\n{e.StackTrace}");	
 				} else {
 					string calleeName = new StackFrame(1).GetMethod().Name;
-					logger.LogError($"Patching {calleeName} caused error: {e.Message}");
+					logger.LogError($"Patching {calleeName} caused error: {e.Message}\n{e.StackTrace}");
 				}
-				logger.LogError(e.StackTrace);
 			}
 		}
 	}
