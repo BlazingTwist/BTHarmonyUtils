@@ -22,14 +22,14 @@ namespace BTHarmonyUtils.TranspilerUtils {
 		/// <summary>
 		/// A construct intended to generify Transpilers and make them more accessible.
 		/// </summary>
-		/// <param name="expectedMatches">Amount of matches that this Patch should encounter</param>
+		/// <param name="expectedMatches">Amount of matches that this Patch should encounter, or less than 0 for any amount</param>
 		/// <param name="insertInstructionSequence">Sequence of instructions to insert at the matching locations</param>
 		/// <param name="prefixInstructionSequence">Sequence of instructions that should occur before the replace-sequence</param>
 		/// <param name="targetInstructionSequence">Sequence of instructions that should be removed / replaced with the insert-sequence</param>
 		/// <param name="postfixInstructionSequence">Sequence of instructions that should occur after the replace-sequence</param>
 		/// <exception cref="InvalidDataException">thrown when no prefix, replace and postfix sequence is specified -> cannot match for anything</exception>
 		public CodeReplacementPatch(
-				int expectedMatches,
+				int expectedMatches = -1,
 				IEnumerable<CodeInstruction> insertInstructionSequence = null, IEnumerable<CodeInstruction> prefixInstructionSequence = null,
 				IEnumerable<CodeInstruction> targetInstructionSequence = null, IEnumerable<CodeInstruction> postfixInstructionSequence = null) {
 			this.expectedMatches = expectedMatches;
@@ -59,7 +59,7 @@ namespace BTHarmonyUtils.TranspilerUtils {
 		/// This class is intended to make working with Transpilers more accessible for anybody.
 		/// The MarkerMethod may contain 0 or 1 insert/prefix/target/postfix -sequences.
 		/// </summary>
-		/// <param name="expectedMatches">Amount of matches that this Patch should encounter</param>
+		/// <param name="expectedMatches">Amount of matches that this Patch should encounter, or less than 0 for any amount</param>
 		/// <param name="markerMethod">A method that is using TranspilerMarkers to define insert/prefix/target/prefix -sequences</param>
 		/// <exception cref="InvalidDataException">thrown when a sequence isn't closed or there is no prefix, target and postfix sequence</exception>
 		public CodeReplacementPatch(int expectedMatches, Expression<Action> markerMethod) {
@@ -102,6 +102,46 @@ namespace BTHarmonyUtils.TranspilerUtils {
 		}
 
 		/// <summary>
+		/// Move the labels in the replace-sequence and first label of postfix-sequence to beginning of insert-sequence
+		/// </summary>
+		/// <returns>a new insert-sequence with adjusted labels</returns>
+		private List<CodeInstruction> MoveLabels(List<CodeInstruction> instructions, int index, int insertLength, int prefixLength, int replaceLength,
+				int postfixLength) {
+			int instructionCount = instructions.Count;
+			List<Label> allLabels = replaceLength > 0
+					? InstructionUtils.FindAllLabels(instructions, index + prefixLength, index + prefixLength + replaceLength)
+					: new List<Label>();
+
+			// when there is no insert-sequence, move labels of replace-sequence to start of postfix sequence
+			if (insertLength == 0) {
+				// make sure there actually is an instruction we can attach these labels to
+				int labelIndex = index + prefixLength + replaceLength;
+				if (labelIndex < instructionCount) {
+					instructions[labelIndex].labels.AddRange(allLabels);
+					return new List<CodeInstruction>();
+				}
+
+				// otherwise insert a nop instruction to take all the labels
+				CodeInstruction nopInst = new CodeInstruction(OpCodes.Nop);
+				nopInst.labels.AddRange(allLabels);
+				return new List<CodeInstruction> { nopInst };
+			}
+
+			// insert-sequence provided, move label of first postfix instruction as well.
+			if (postfixLength > 0) {
+				CodeInstruction firstPostfixInstruction = instructions[index + prefixLength + replaceLength];
+				allLabels.AddRange(firstPostfixInstruction.labels);
+				firstPostfixInstruction.labels.Clear();
+			}
+
+			CodeInstruction newFirstInstruction = new CodeInstruction(insertSequence[0]);
+			newFirstInstruction.labels.AddRange(allLabels);
+			List<CodeInstruction> newInsertSequence = new List<CodeInstruction> { newFirstInstruction };
+			newInsertSequence.AddRange(insertSequence.GetRange(1, insertLength - 1));
+			return newInsertSequence;
+		}
+
+		/// <summary>
 		/// Apply this ReplacementPatch to the given instructions
 		/// </summary>
 		/// <param name="instructions">instructions to apply the changes to</param>
@@ -136,7 +176,7 @@ namespace BTHarmonyUtils.TranspilerUtils {
 			sequenceMatches = sequenceMatches ?? new List<int>();
 			int sequenceMatchesCount = sequenceMatches.Count;
 
-			if (sequenceMatchesCount != expectedMatches) {
+			if (expectedMatches >= 0 && sequenceMatchesCount != expectedMatches) {
 				throw new InvalidDataException(
 						$"CodeReplacementPatch has found {sequenceMatchesCount} matches, but expected to find {expectedMatches}! Mod may be outdated!");
 			}
@@ -155,27 +195,22 @@ namespace BTHarmonyUtils.TranspilerUtils {
 			// iterate over indexes in reverse, this way we don't have to update the indexes after every removal / insertion
 			for (int i = sequenceMatchesCount - 1; i >= 0; i--) {
 				int index = sequenceMatches[i];
-				if (insertLength > 0) {
-					instructions.InsertRange(index + prefixLength + replaceLength, insertSequence);
-				}
+				List<CodeInstruction> insertSequenceWithLabels = MoveLabels(instructions, index, insertLength, prefixLength, replaceLength, postfixLength);
+				instructions.InsertRange(index + prefixLength + replaceLength, insertSequenceWithLabels);
 				instructions.RemoveRange(index + prefixLength, replaceLength);
 			}
 		}
-		
+
 		/// <summary>
 		/// Apply this ReplacementPatch to the given instructions
 		/// Catches all exceptions and writes them to the logger
 		/// </summary>
 		/// <param name="instructions">instructions to apply the changes to</param>
 		/// <param name="logger">logger to write exceptions to</param>
-		public void ApplySafe(List<CodeInstruction> instructions, ManualLogSource logger)
-		{
-			try
-			{
+		public void ApplySafe(List<CodeInstruction> instructions, ManualLogSource logger) {
+			try {
 				Apply(instructions);
-			}
-			catch (InvalidDataException e)
-			{
+			} catch (InvalidDataException e) {
 				logger.LogError($"Patching with MarkerMethod {markerMethodInfo.Name} caused error: {e.Message}");
 				logger.LogError(e.StackTrace);
 			}

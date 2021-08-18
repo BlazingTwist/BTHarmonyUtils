@@ -1,8 +1,24 @@
 ﻿using System.Collections.Generic;
+using System.Reflection.Emit;
 using HarmonyLib;
 
 namespace BTHarmonyUtils {
 	public class InstructionUtils {
+		/// <summary>
+		/// Returns all Labels in the specified range
+		/// </summary>
+		/// <param name="instructions">list of instructions</param>
+		/// <param name="startIndex">index of first instruction to check, inclusive</param>
+		/// <param name="endIndex">index of last instruction to check, exclusive</param>
+		/// <returns></returns>
+		public static List<Label> FindAllLabels(List<CodeInstruction> instructions, int startIndex, int endIndex) {
+			List<Label> result = new List<Label>();
+			for(int i = startIndex; i < endIndex; i++) {
+				result.AddRange(instructions[i].labels);
+			}
+			return result;
+		}
+		
 		/// <summary>
 		/// Checks a list of instructions for occurrences of a sequence
 		/// </summary>

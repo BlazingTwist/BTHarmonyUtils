@@ -59,6 +59,7 @@
         <Compile Include="src\ILUtils\InlineSignatureParser.cs" />
         <Compile Include="src\ILUtils\InstructionUtils.cs" />
         <Compile Include="src\ILUtils\MethodBodyReader.cs" />
+        <Compile Include="src\PatcherUtils.cs" />
         <Compile Include="src\TranspilerUtils\CodeReplacementPatch.cs" />
         <Compile Include="src\TranspilerUtils\TranspilerMarkers.cs" />
     </ItemGroup>
