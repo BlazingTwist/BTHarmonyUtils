@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -211,7 +212,12 @@ namespace BTHarmonyUtils.TranspilerUtils {
 			try {
 				Apply(instructions);
 			} catch (InvalidDataException e) {
-				logger.LogError($"Patching with MarkerMethod {markerMethodInfo.Name} caused error: {e.Message}");
+				if (markerMethodInfo != null) {
+					logger.LogError($"Patching with MarkerMethod {markerMethodInfo.Name} caused error: {e.Message}");	
+				} else {
+					string calleeName = new StackFrame(1).GetMethod().Name;
+					logger.LogError($"Patching {calleeName} caused error: {e.Message}");
+				}
 				logger.LogError(e.StackTrace);
 			}
 		}
