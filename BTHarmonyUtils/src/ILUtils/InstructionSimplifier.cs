@@ -4,7 +4,16 @@ using System.Reflection.Emit;
 using HarmonyLib;
 
 namespace BTHarmonyUtils {
+	/// <summary>
+	/// A class that houses all the logic for Simplifying Code-Instructions
+	/// </summary>
 	public static class InstructionSimplifier {
+		/// <summary>
+		/// Creates a Tuple&lt;opcode, operand&gt; contains a simplified OpCode/Operand
+		/// e.g. 'Ldarg_0' becomes {Ldarg_S, 0}
+		/// </summary>
+		/// <param name="instruction">the CodeInstruction to simplify</param>
+		/// <returns>the Tuple&lt;opcode, operand&gt;</returns>
 		[SuppressMessage("ReSharper", "ConvertIfStatementToReturnStatement")]
 		public static Tuple<OpCode, object> SimplifyForComparison(CodeInstruction instruction) {
 			OpCode opcode = instruction.opcode;

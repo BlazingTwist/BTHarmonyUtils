@@ -4,14 +4,17 @@ using System.Reflection.Emit;
 using HarmonyLib;
 
 namespace BTHarmonyUtils {
-	public class InstructionUtils {
+	/// <summary>
+	/// A Utility class centered around CodeInstructions
+	/// </summary>
+	public static class InstructionUtils {
 		/// <summary>
 		/// Returns all Labels in the specified range
 		/// </summary>
 		/// <param name="instructions">list of instructions</param>
 		/// <param name="startIndex">index of first instruction to check, inclusive</param>
 		/// <param name="endIndex">index of last instruction to check, exclusive</param>
-		/// <returns></returns>
+		/// <returns>all Labels in the specified range</returns>
 		public static List<Label> FindAllLabels(List<CodeInstruction> instructions, int startIndex, int endIndex) {
 			List<Label> result = new List<Label>();
 			for (int i = startIndex; i < endIndex; i++) {
@@ -44,7 +47,7 @@ namespace BTHarmonyUtils {
 		/// <param name="instructions">instructions</param>
 		/// <param name="sequence">matcher instructions</param>
 		/// <param name="offset">offset the instruction list</param>
-		/// <returns></returns>
+		/// <returns>true if the instructionSequence at the specified offset matches the matcher-sequence</returns>
 		public static bool SequenceMatches(List<CodeInstruction> instructions, List<CodeInstruction> sequence, int offset) {
 			if (sequence.Count == 0) {
 				return true;
@@ -73,7 +76,7 @@ namespace BTHarmonyUtils {
 		/// </summary>
 		/// <param name="instruction">instruction</param>
 		/// <param name="matcherInstruction">matcher instruction</param>
-		/// <returns></returns>
+		/// <returns>true if the instruction roughly equals the matcher-instruction</returns>
 		public static bool InstructionMatches(CodeInstruction instruction, CodeInstruction matcherInstruction) {
 			Tuple<OpCode, object> tuple = InstructionSimplifier.SimplifyForComparison(instruction);
 			Tuple<OpCode, object> matcherTuple = InstructionSimplifier.SimplifyForComparison(matcherInstruction);

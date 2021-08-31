@@ -8,6 +8,9 @@ using HarmonyLib;
 using JetBrains.Annotations;
 
 namespace BTHarmonyUtils {
+	/// <summary>
+	/// A class for reading CodeInstructions from Methods
+	/// </summary>
 	[PublicAPI]
 	public class MethodBodyReader {
 		private static readonly OpCode[] one_byte_opcodes;
@@ -42,6 +45,10 @@ namespace BTHarmonyUtils {
 			}
 		}
 
+		/// <summary>
+		/// Create a MethodBodyReader for a given Method
+		/// </summary>
+		/// <param name="method">The Method to read from</param>
 		public MethodBodyReader(MethodBase method) {
 			module = method.Module;
 
@@ -68,6 +75,10 @@ namespace BTHarmonyUtils {
 			localVariables = body?.LocalVariables.ToList() ?? new List<LocalVariableInfo>();
 		}
 
+		/// <summary>
+		/// Read all of the CodeInstructions of this method into a List
+		/// </summary>
+		/// <returns>List of CodeInstructions</returns>
 		public List<CodeInstruction> ReadInstructions() {
 			if (instructions == null) {
 				instructions = new List<CodeInstruction>();
