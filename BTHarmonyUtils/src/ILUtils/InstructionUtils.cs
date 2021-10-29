@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using HarmonyLib;
 
-namespace BTHarmonyUtils {
+namespace BTHarmonyUtils.ILUtils {
 	/// <summary>
 	/// A Utility class centered around CodeInstructions
 	/// </summary>

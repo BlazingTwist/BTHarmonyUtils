@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BTHarmonyUtils {
+namespace BTHarmonyUtils.ILUtils {
 	/// <summary>
 	/// Want to read values from an array of Bytes?
 	/// Use this thing.

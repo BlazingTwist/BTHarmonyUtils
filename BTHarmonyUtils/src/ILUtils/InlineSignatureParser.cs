@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using HarmonyLib;
 using Mono.Cecil;
 
-namespace BTHarmonyUtils {
+namespace BTHarmonyUtils.ILUtils {
 	internal static class InlineSignatureParser {
 		// Based on https://github.com/pardeike/Harmony/blob/381b72c48a9929c55e3469d2bd50b3176a6d5f89/Harmony/Internal/InlineSignatureParser.cs
 		// ... which is based on https://github.com/MonoMod/MonoMod.Common/blob/fb7fed148af165905ee0f2db1bb4c78a0137fb89/Utils/ReflectionHelper.ParseCallSite.cs

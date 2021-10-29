@@ -7,10 +7,14 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using BepInEx.Logging;
+using BTHarmonyUtils.ILUtils;
 using HarmonyLib;
 using JetBrains.Annotations;
 
 namespace BTHarmonyUtils.TranspilerUtils {
+	/// <summary>
+	/// Class that acts as an intermediary between user and transpiler
+	/// </summary>
 	[PublicAPI]
 	public class CodeReplacementPatch {
 		private readonly int expectedMatches;
@@ -61,7 +65,7 @@ namespace BTHarmonyUtils.TranspilerUtils {
 		/// The MarkerMethod may contain 0 or 1 insert/prefix/target/postfix -sequences.
 		/// </summary>
 		/// <param name="expectedMatches">Amount of matches that this Patch should encounter, or less than 0 for any amount</param>
-		/// <param name="markerMethod">A method that is using TranspilerMarkers to define insert/prefix/target/prefix -sequences</param>
+		/// <param name="markerMethod">A method that is using TranspilerMarkers to define insert/prefix/target/postfix -sequences</param>
 		/// <exception cref="InvalidDataException">thrown when a sequence isn't closed or there is no prefix, target and postfix sequence</exception>
 		public CodeReplacementPatch(int expectedMatches, Expression<Action> markerMethod) {
 			this.expectedMatches = expectedMatches;

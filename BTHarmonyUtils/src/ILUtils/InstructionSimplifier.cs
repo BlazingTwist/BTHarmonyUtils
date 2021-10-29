@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
 using HarmonyLib;
 
-namespace BTHarmonyUtils {
+namespace BTHarmonyUtils.ILUtils {
 	/// <summary>
 	/// A class that houses all the logic for Simplifying Code-Instructions
 	/// </summary>
@@ -138,6 +138,10 @@ namespace BTHarmonyUtils {
 
 			if (opcode == OpCodes.Blt || opcode == OpCodes.Blt_Un || opcode == OpCodes.Blt_Un_S) {
 				return new Tuple<OpCode, object>(OpCodes.Blt_S, instruction.operand);
+			}
+
+			if (opcode == OpCodes.Callvirt || opcode == OpCodes.Calli) {
+				return new Tuple<OpCode, object>(OpCodes.Call, instruction.operand);
 			}
 			
 			return new Tuple<OpCode, object>(instruction.opcode, instruction.operand);

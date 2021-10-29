@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 using HarmonyLib;
 using JetBrains.Annotations;
 
-namespace BTHarmonyUtils {
+namespace BTHarmonyUtils.ILUtils {
 	/// <summary>
 	/// A class for reading CodeInstructions from Methods
 	/// </summary>
