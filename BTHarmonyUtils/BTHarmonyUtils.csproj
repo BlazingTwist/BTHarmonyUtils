@@ -62,6 +62,8 @@
         <Compile Include="src\ILUtils\InstructionSimplifier.cs" />
         <Compile Include="src\ILUtils\InstructionUtils.cs" />
         <Compile Include="src\ILUtils\MethodBodyReader.cs" />
+        <Compile Include="src\InstructionSearch\InstructionSearcher.cs" />
+        <Compile Include="src\InstructionSearch\SearchMask.cs" />
         <Compile Include="src\MidFixPatch\BTHarmonyMidFix.cs" />
         <Compile Include="src\MidFixPatch\MidFixCodeGenerator.cs" />
         <Compile Include="src\MidFixPatch\MidFixInstructionMatcher.cs" />
