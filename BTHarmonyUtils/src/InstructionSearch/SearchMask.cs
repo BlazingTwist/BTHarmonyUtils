@@ -51,7 +51,7 @@ namespace BTHarmonyUtils.InstructionSearch {
 		/// <param name="copyToResult">Copy the instruction matching this SearchMask to the output</param>
 		/// <param name="allowSimplify">Allow simplified instruction matching, simplify logic is in <see cref="ILUtils.InstructionSimplifier"/></param>
 		/// <returns></returns>
-		public static SearchMask MatchOpCode(OpCode opCode, bool copyToResult, bool allowSimplify = true) {
+		public static SearchMask MatchOpCode(OpCode opCode, bool copyToResult = false, bool allowSimplify = true) {
 			return new SearchMask(opCode, null, allowSimplify, copyToResult);
 		}
 
@@ -61,7 +61,7 @@ namespace BTHarmonyUtils.InstructionSearch {
 		/// <param name="operand">Operand to look for</param>
 		/// <param name="copyToResult">Copy the instruction matching this SearchMask to the output</param>
 		/// <returns></returns>
-		public static SearchMask MatchOperand(object operand, bool copyToResult) {
+		public static SearchMask MatchOperand(object operand, bool copyToResult = false) {
 			return new SearchMask(null, operand, true, copyToResult);
 		}
 
@@ -72,7 +72,7 @@ namespace BTHarmonyUtils.InstructionSearch {
 		/// <param name="copyToResult">Copy the instruction matching this SearchMask to the output</param>
 		/// <param name="allowSimplify">Allow simplified instruction matching, simplify logic is in <see cref="ILUtils.InstructionSimplifier"/></param>
 		/// <returns></returns>
-		public static SearchMask MatchCodeInstruction(CodeInstruction instruction, bool copyToResult, bool allowSimplify = true) {
+		public static SearchMask MatchCodeInstruction(CodeInstruction instruction, bool copyToResult = false, bool allowSimplify = true) {
 			return new SearchMask(instruction?.opcode, instruction?.operand, allowSimplify, copyToResult);
 		}
 
@@ -84,7 +84,7 @@ namespace BTHarmonyUtils.InstructionSearch {
 		/// <param name="copyToResult">Copy the instruction matching this SearchMask to the output</param>
 		/// <param name="allowSimplify">Allow simplified instruction matching, simplify logic is in <see cref="ILUtils.InstructionSimplifier"/></param>
 		/// <returns></returns>
-		public static SearchMask MatchInstruction(OpCode? opCode, object operand, bool copyToResult, bool allowSimplify = true) {
+		public static SearchMask MatchInstruction(OpCode? opCode, object operand, bool copyToResult = false, bool allowSimplify = true) {
 			return new SearchMask(opCode, operand, allowSimplify, copyToResult);
 		}
 	}
