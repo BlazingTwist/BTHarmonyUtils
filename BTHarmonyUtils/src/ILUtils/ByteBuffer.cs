@@ -1,11 +1,13 @@
 ﻿using System;
 
 namespace BTHarmonyUtils.ILUtils {
+
 	/// <summary>
 	/// Want to read values from an array of Bytes?
 	/// Use this thing.
 	/// </summary>
 	public class ByteBuffer {
+
 		private readonly byte[] buffer;
 
 		/// <summary>
@@ -134,5 +136,7 @@ namespace BTHarmonyUtils.ILUtils {
 				throw new ArgumentOutOfRangeException();
 			}
 		}
+
 	}
+
 }

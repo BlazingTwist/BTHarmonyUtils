@@ -3,11 +3,13 @@ using HarmonyLib;
 using JetBrains.Annotations;
 
 namespace BTHarmonyUtils.InstructionSearch {
+
 	/// <summary>
 	/// Used to match for CodeInstructions
 	/// </summary>
 	[PublicAPI]
 	public class SearchMask {
+
 		/// <summary>
 		/// OpCode to look for, `null` matches any.
 		/// </summary>
@@ -87,5 +89,7 @@ namespace BTHarmonyUtils.InstructionSearch {
 		public static SearchMask MatchInstruction(OpCode? opCode, object operand, bool copyToResult = false, bool allowSimplify = true) {
 			return new SearchMask(opCode, operand, allowSimplify, copyToResult);
 		}
+
 	}
+
 }

@@ -8,11 +8,13 @@ using HarmonyLib;
 using JetBrains.Annotations;
 
 namespace BTHarmonyUtils.ILUtils {
+
 	/// <summary>
 	/// A class for reading CodeInstructions from Methods
 	/// </summary>
 	[PublicAPI]
 	public class MethodBodyReader {
+
 		private static readonly OpCode[] one_byte_opcodes;
 		private static readonly OpCode[] two_bytes_opcodes;
 
@@ -233,5 +235,7 @@ namespace BTHarmonyUtils.ILUtils {
 					throw new NotSupportedException();
 			}
 		}
+
 	}
+
 }

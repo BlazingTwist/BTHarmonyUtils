@@ -8,13 +8,16 @@ using HarmonyLib;
 using JetBrains.Annotations;
 
 namespace BTHarmonyUtils.MidFixPatch {
+
 	/// <summary>
 	/// Applies the MidFix patches.
 	/// </summary>
 	public static class MidFixPatcher {
+
 		private static readonly ManualLogSource logger = Logger.CreateLogSource($"BTHarmonyUtils:{nameof(MidFixPatcher)}");
 
 		private class MidFixPatch {
+
 			public readonly MethodInfo midFixMethod;
 			public readonly MidFixInstructionMatcher instructionMatcher;
 			public readonly MethodBase patchTargetMethod;
@@ -26,6 +29,7 @@ namespace BTHarmonyUtils.MidFixPatch {
 				this.patchTargetMethod = patchTargetMethod;
 				this.priority = priority;
 			}
+
 		}
 
 		private static readonly List<MidFixPatch> midFixPatches = new List<MidFixPatch>();
@@ -39,11 +43,12 @@ namespace BTHarmonyUtils.MidFixPatch {
 				logger.LogError($"MidFix patch method '{patcherMethod.FullDescription()}' must be static");
 				return;
 			}
-			
+
 			MethodBase resolvedMethod = PatcherUtils.ResolveHarmonyMethod(info, patcherMethod.Name);
 			MethodInfo instructionMatcherMethod = midFixAttribute.ResolveInstructionMatcherMethod(patcherMethod);
 			if (instructionMatcherMethod.ReturnType == typeof(MidFixInstructionMatcher)) {
-				logger.LogError("InstructionMatcherMethod for patch " + patcherMethod.FullDescription() + " does not return type " + nameof(MidFixInstructionMatcher));
+				logger.LogError("InstructionMatcherMethod for patch " + patcherMethod.FullDescription() + " does not return type "
+						+ nameof(MidFixInstructionMatcher));
 				return;
 			}
 			if (!instructionMatcherMethod.IsStatic || instructionMatcherMethod.GetParameters().Any()) {
@@ -56,7 +61,11 @@ namespace BTHarmonyUtils.MidFixPatch {
 		}
 
 		[UsedImplicitly]
-		private static IEnumerable<CodeInstruction> MidFixTranspiler(IEnumerable<CodeInstruction> codeInstructions, MethodBase patchTargetMethod, ILGenerator generator) {
+		private static IEnumerable<CodeInstruction> MidFixTranspiler(
+				IEnumerable<CodeInstruction> codeInstructions,
+				MethodBase patchTargetMethod,
+				ILGenerator generator
+		) {
 			List<MidFixPatch> relevantPatches = midFixPatches.Where(patch => patch.patchTargetMethod == patchTargetMethod).ToList();
 			if (relevantPatches.Count == 0) {
 				logger.LogError("MidFix transpiler called, but no MidFix patches were registered for method " + patchTargetMethod.FullDescription());
@@ -69,5 +78,7 @@ namespace BTHarmonyUtils.MidFixPatch {
 			}
 			return instructions;
 		}
+
 	}
+
 }

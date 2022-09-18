@@ -7,12 +7,14 @@ using HarmonyLib;
 using JetBrains.Annotations;
 
 namespace BTHarmonyUtils.InstructionSearch {
+
 	/// <summary>
 	/// InstructionSearcher lets you look for CodeInstructions
 	/// especially useful to access local variables or compiler generated code in transpilers
 	/// </summary>
 	[PublicAPI]
 	public class InstructionSearcher {
+
 		private readonly int expectedMatches;
 		private readonly List<SearchMask> searchMasks = new List<SearchMask>();
 
@@ -72,5 +74,7 @@ namespace BTHarmonyUtils.InstructionSearch {
 				return null;
 			}
 		}
+
 	}
+
 }

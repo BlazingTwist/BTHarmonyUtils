@@ -4,12 +4,14 @@ using HarmonyLib;
 using JetBrains.Annotations;
 
 namespace BTHarmonyUtils.MidFixPatch {
+
 	/// <summary>
 	/// Marks a HarmonyPatch method as a MidFix (called in the middle of a method, rather than the beginning or end)
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
 	[PublicAPI]
 	public class BTHarmonyMidFix : Attribute {
+
 		public Type instructionMatcherDeclaringType { get; }
 		public string instructionMatcherMethodName { get; }
 		public int priority { get; }
@@ -45,5 +47,7 @@ namespace BTHarmonyUtils.MidFixPatch {
 			}
 			return AccessTools.DeclaredMethod(declaringType, instructionMatcherMethodName) ?? AccessTools.Method(declaringType, instructionMatcherMethodName);
 		}
+
 	}
+
 }

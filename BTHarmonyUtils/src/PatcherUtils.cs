@@ -12,11 +12,13 @@ using HarmonyLib;
 using JetBrains.Annotations;
 
 namespace BTHarmonyUtils {
+
 	/// <summary>
 	/// Utility class for patching code
 	/// </summary>
 	[PublicAPI]
 	public static class PatcherUtils {
+
 		private static readonly ManualLogSource logger = Logger.CreateLogSource($"BTHarmonyUtils:{nameof(PatcherUtils)}");
 
 		/// <summary>
@@ -41,7 +43,7 @@ namespace BTHarmonyUtils {
 			}
 			return null;
 		}
-		
+
 		/// <summary>
 		/// Apply all HarmonyUtils specific patches, you still need to call harmony.PatchAll for the other patches
 		/// </summary>
@@ -142,7 +144,8 @@ namespace BTHarmonyUtils {
 								+ $" in type {info.declaringType.FullDescription()}, but it was found in base class {baseMethod.DeclaringType.FullDescription()}");
 						return baseMethod;
 					}
-					logger.LogError($"{patchName} - Could not find method {info.methodName} with {info.argumentTypes.Description()} arguments in type {info.declaringType.FullDescription()}");
+					logger.LogError($"{patchName} - Could not find method {info.methodName}"
+							+ $" with {info.argumentTypes.Description()} arguments in type {info.declaringType.FullDescription()}");
 					return null;
 				}
 				case MethodType.Getter: {
@@ -170,7 +173,8 @@ namespace BTHarmonyUtils {
 				case MethodType.Constructor: {
 					ConstructorInfo constructorInfo = AccessTools.DeclaredConstructor(info.declaringType, info.argumentTypes);
 					if (constructorInfo == null) {
-						LogPatchFailure(patchName, $"Could not find constructor with {info.argumentTypes.Description()} parameters in type {info.declaringType.FullDescription()}");
+						LogPatchFailure(patchName, $"Could not find constructor"
+								+ $" with {info.argumentTypes.Description()} parameters in type {info.declaringType.FullDescription()}");
 					}
 					return constructorInfo;
 				}
@@ -199,7 +203,8 @@ namespace BTHarmonyUtils {
 			}
 			PropertyInfo baseProperty = AccessTools.Property(info.declaringType, info.methodName);
 			if (baseProperty != null) {
-				logger.LogWarning($"{patchName} - Could not find property {info.methodName} in type {info.declaringType.FullDescription()}, but it was found in base class of this type: {baseProperty.DeclaringType.FullDescription()}");
+				logger.LogWarning($"{patchName} - Could not find property {info.methodName} in type {info.declaringType.FullDescription()}"
+						+ $", but it was found in base class of this type: {baseProperty.DeclaringType.FullDescription()}");
 				return baseProperty;
 			}
 			LogPatchFailure(patchName, $"Could not find property {info.methodName} in type {info.declaringType.FullDescription()}");
@@ -209,5 +214,7 @@ namespace BTHarmonyUtils {
 		private static void LogPatchFailure(string patchName, string reason) {
 			logger.LogError("Failed to process patch " + patchName + " - " + reason);
 		}
+
 	}
+
 }

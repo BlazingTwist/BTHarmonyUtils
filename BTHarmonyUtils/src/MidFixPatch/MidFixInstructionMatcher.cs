@@ -13,11 +13,13 @@ using HarmonyLib;
 using JetBrains.Annotations;
 
 namespace BTHarmonyUtils.MidFixPatch {
+
 	/// <summary>
 	/// A class that matches for CodeInstructions in methods
 	/// </summary>
 	[PublicAPI]
 	public class MidFixInstructionMatcher {
+
 		private readonly int expectedMatches;
 		private readonly MethodInfo markerMethodInfo;
 		private readonly List<CodeInstruction> prefixSequence = new List<CodeInstruction>();
@@ -33,7 +35,8 @@ namespace BTHarmonyUtils.MidFixPatch {
 		public MidFixInstructionMatcher(
 				int expectedMatches = -1,
 				IEnumerable<CodeInstruction> prefixInstructionSequence = null,
-				IEnumerable<CodeInstruction> postfixInstructionSequence = null) {
+				IEnumerable<CodeInstruction> postfixInstructionSequence = null
+		) {
 			this.expectedMatches = expectedMatches;
 			if (prefixInstructionSequence != null) {
 				prefixSequence.AddRange(prefixInstructionSequence);
@@ -89,8 +92,14 @@ namespace BTHarmonyUtils.MidFixPatch {
 		/// Move the labels in the replace-sequence and first label of postfix-sequence to beginning of insert-sequence
 		/// </summary>
 		/// <returns>a new insert-sequence with adjusted labels</returns>
-		private List<CodeInstruction> MoveLabels(List<CodeInstruction> instructions, int index,
-				List<CodeInstruction> insertSequence, int insertLength, int prefixLength, int postfixLength) {
+		private List<CodeInstruction> MoveLabels(
+				List<CodeInstruction> instructions,
+				int index,
+				List<CodeInstruction> insertSequence,
+				int insertLength,
+				int prefixLength,
+				int postfixLength
+		) {
 			List<Label> postFixLabels = new List<Label>();
 			if (postfixLength > 0) {
 				CodeInstruction firstPostfixInstruction = instructions[index + prefixLength];
@@ -119,7 +128,7 @@ namespace BTHarmonyUtils.MidFixPatch {
 				return;
 			}
 			int insertSequenceLength = insertSequence.Count;
-			
+
 			int prefixLength = prefixSequence.Count;
 			int postfixLength = postfixSequence.Count;
 			List<int> sequenceMatches = null;
@@ -147,7 +156,8 @@ namespace BTHarmonyUtils.MidFixPatch {
 			// iterate over indexes in reverse, this way we don't have to update the indexes after every insertion
 			for (int i = sequenceMatchesCount - 1; i >= 0; i--) {
 				int index = sequenceMatches[i];
-				List<CodeInstruction> insertSequenceWithLabels = MoveLabels(instructions, index, insertSequence, insertSequenceLength, prefixLength, postfixLength);
+				List<CodeInstruction> insertSequenceWithLabels =
+						MoveLabels(instructions, index, insertSequence, insertSequenceLength, prefixLength, postfixLength);
 				instructions.InsertRange(index + prefixLength, insertSequenceWithLabels);
 			}
 		}
@@ -161,7 +171,13 @@ namespace BTHarmonyUtils.MidFixPatch {
 		/// <param name="originalMethod">method that is being patched</param>
 		/// <param name="generator">ilGenerator from harmony</param>
 		/// <param name="logger">logger to write exceptions to</param>
-		public void ApplySafe(List<CodeInstruction> instructions, MethodInfo midFixPatch, MethodInfo originalMethod, ILGenerator generator, ManualLogSource logger) {
+		public void ApplySafe(
+				List<CodeInstruction> instructions,
+				MethodInfo midFixPatch,
+				MethodInfo originalMethod,
+				ILGenerator generator,
+				ManualLogSource logger
+		) {
 			try {
 				Apply(instructions, midFixPatch, originalMethod, generator);
 			} catch (InvalidDataException e) {
@@ -173,5 +189,7 @@ namespace BTHarmonyUtils.MidFixPatch {
 				}
 			}
 		}
+
 	}
+
 }

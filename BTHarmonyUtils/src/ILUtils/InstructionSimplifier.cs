@@ -6,11 +6,13 @@ using HarmonyLib;
 using JetBrains.Annotations;
 
 namespace BTHarmonyUtils.ILUtils {
+
 	/// <summary>
 	/// A class that houses all the logic for Simplifying Code-Instructions
 	/// </summary>
 	[PublicAPI]
 	public static class InstructionSimplifier {
+
 		/// <summary>
 		/// Creates a Tuple&lt;opcode, operand&gt; contains a simplified OpCode/Operand
 		/// e.g. 'Ldarg_0' becomes {Ldarg_S, 0}
@@ -33,7 +35,7 @@ namespace BTHarmonyUtils.ILUtils {
 			}
 			return SimplifyForComparison(searchMask.opCode.Value, searchMask.operand);
 		}
-		
+
 		/// <summary>
 		/// Creates a Tuple&lt;opcode, operand&gt; contains a simplified OpCode/Operand
 		/// e.g. 'Ldarg_0' becomes {Ldarg_S, 0}
@@ -144,7 +146,7 @@ namespace BTHarmonyUtils.ILUtils {
 			if (opcode == OpCodes.Beq) {
 				return new Tuple<OpCode?, object>(OpCodes.Beq_S, operand);
 			}
-			
+
 			if (opcode == OpCodes.Bne_Un) {
 				return new Tuple<OpCode?, object>(OpCodes.Bne_Un_S, operand);
 			}
@@ -168,8 +170,10 @@ namespace BTHarmonyUtils.ILUtils {
 			if (opcode == OpCodes.Callvirt || opcode == OpCodes.Calli) {
 				return new Tuple<OpCode?, object>(OpCodes.Call, operand);
 			}
-			
+
 			return new Tuple<OpCode?, object>(opcode, operand);
 		}
+
 	}
+
 }

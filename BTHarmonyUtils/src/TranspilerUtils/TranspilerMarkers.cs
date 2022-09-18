@@ -3,14 +3,18 @@ using System.Runtime.CompilerServices;
 using HarmonyLib;
 
 namespace BTHarmonyUtils.TranspilerUtils {
+
 	public static class TranspilerMarkers {
+
 		internal enum Markers {
+
 			insertSequence,
 			prefixSequence,
 			targetSequence,
 			postfixSequence
+
 		}
-		
+
 		public static readonly CodeInstruction ci_insertSequenceStart =
 				new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(TranspilerMarkers), nameof(InsertSequenceStart)));
 
@@ -55,5 +59,7 @@ namespace BTHarmonyUtils.TranspilerUtils {
 		/// </summary>
 		[MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
 		public static void LastSequenceEnd() { }
+
 	}
+
 }

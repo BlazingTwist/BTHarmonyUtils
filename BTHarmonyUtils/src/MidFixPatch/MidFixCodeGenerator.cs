@@ -10,10 +10,12 @@ using HarmonyLib;
 using JetBrains.Annotations;
 
 namespace BTHarmonyUtils.MidFixPatch {
+
 	/// <summary>
 	/// Class for generating IL-Code for MidFixes
 	/// </summary>
 	public static class MidFixCodeGenerator {
+
 		private static readonly ManualLogSource logger = Logger.CreateLogSource($"BTHarmonyUtils:{nameof(MidFixCodeGenerator)}");
 
 		/// <summary>
@@ -61,11 +63,13 @@ namespace BTHarmonyUtils.MidFixPatch {
 						return null;
 					}
 					if (originalReturnType.IsByRef) {
-						logger.LogError($"MidFix patch '{midFixPatch.FullDescription()}' may not alter the result of a method returning a by-ref result ({originalMethod.FullDescription()})");
+						logger.LogError($"MidFix patch '{midFixPatch.FullDescription()}'"
+								+ $" may not alter the result of a method returning a by-ref result ({originalMethod.FullDescription()})");
 						return null;
 					}
 					if (!parameterType.IsByRef) {
-						logger.LogError($"MidFix patch '{midFixPatch.FullDescription()}' must declare the '__result' parameter with the 'ref' or 'out' keyword");
+						logger.LogError($"MidFix patch '{midFixPatch.FullDescription()}'"
+								+ $" must declare the '__result' parameter with the 'ref' or 'out' keyword");
 						return null;
 					}
 					if (!parameterElementType.IsAssignableFrom(originalReturnType)) {
@@ -82,13 +86,15 @@ namespace BTHarmonyUtils.MidFixPatch {
 					if (fieldName.All(char.IsDigit)) {
 						fieldInfo = AccessTools.DeclaredField(originalClassType, int.Parse(fieldName));
 						if (fieldInfo == null) {
-							logger.LogError($"MidFix patch '{midFixPatch.FullDescription()}' failed, did not find field at index '{fieldName}' in class '{originalClassType.FullDescription()}'");
+							logger.LogError($"MidFix patch '{midFixPatch.FullDescription()}'"
+									+ $" failed, did not find field at index '{fieldName}' in class '{originalClassType.FullDescription()}'");
 							return null;
 						}
 					} else {
 						fieldInfo = AccessTools.Field(originalClassType, fieldName);
 						if (fieldInfo == null) {
-							logger.LogError($"MidFix patch '{midFixPatch.FullDescription()}' failed, did not find field with name '{fieldName}' in class '{originalClassType.FullDescription()}'");
+							logger.LogError($"MidFix patch '{midFixPatch.FullDescription()}'"
+									+ $" failed, did not find field with name '{fieldName}' in class '{originalClassType.FullDescription()}'");
 							return null;
 						}
 					}
@@ -107,7 +113,8 @@ namespace BTHarmonyUtils.MidFixPatch {
 					IList<LocalVariableInfo> localVariableInfos = originalMethod.GetMethodBody().LocalVariables;
 					LocalVariableInfo targetLocalVariable = localVariableInfos.FirstOrDefault(info => info.LocalIndex == localIndex);
 					if (targetLocalVariable == null) {
-						logger.LogError($"MidFix patch '{midFixPatch.FullDescription()}' failed, did not find local variable at index '{localIndex}' in method '{originalMethod.FullDescription()}'");
+						logger.LogError($"MidFix patch '{midFixPatch.FullDescription()}'"
+								+ $" failed, did not find local variable at index '{localIndex}' in method '{originalMethod.FullDescription()}'");
 						return null;
 					}
 					if (!parameterElementType.IsAssignableFrom(targetLocalVariable.LocalType)) {
@@ -122,13 +129,14 @@ namespace BTHarmonyUtils.MidFixPatch {
 						int paramIndex = int.Parse(parameterName.Substring("__".Length));
 						targetParameter = originalParamDict.Values.FirstOrDefault(paramInfo => paramInfo.Position == paramIndex);
 						if (targetParameter == null) {
-							logger.LogError($"MidFix patch '{midFixPatch.FullDescription()}' failed, did not find parameter at index '{paramIndex}' in method '{originalMethod.FullDescription()}'");
+							logger.LogError($"MidFix patch '{midFixPatch.FullDescription()}'"
+									+ $" failed, did not find parameter at index '{paramIndex}' in method '{originalMethod.FullDescription()}'");
 							return null;
 						}
 					} else {
 						if (!originalParamDict.TryGetValue(parameterName, out targetParameter)) {
-							logger.LogError(
-									$"MidFix patch '{midFixPatch.FullDescription()}' failed, did not find parameter with name '{parameterName}' in method '{originalMethod.FullDescription()}'");
+							logger.LogError($"MidFix patch '{midFixPatch.FullDescription()}'"
+									+ $" failed, did not find parameter with name '{parameterName}' in method '{originalMethod.FullDescription()}'");
 							return null;
 						}
 					}
@@ -146,7 +154,8 @@ namespace BTHarmonyUtils.MidFixPatch {
 					bool patchParamIsOut = parameterType.IsByRef || parameter.IsOut;
 
 					if (targetParameterElementType.IsValueType != parameterElementType.IsValueType) {
-						logger.LogError($"MidFix patch '{midFixPatch.FullDescription()}' parameter '{parameterName}' is {(parameterElementType.IsValueType ? "valueType" : "objectType")}"
+						logger.LogError($"MidFix patch '{midFixPatch.FullDescription()}'"
+								+ $" parameter '{parameterName}' is {(parameterElementType.IsValueType ? "valueType" : "objectType")}"
 								+ $", but original '{originalMethod.FullDescription()}' is not. Boxing/Unboxing is not supported by BTHarmonyUtils.");
 						return null;
 					}
@@ -240,5 +249,7 @@ namespace BTHarmonyUtils.MidFixPatch {
 			}
 			return OpCodes.Ldind_Ref;
 		}
+
 	}
+
 }

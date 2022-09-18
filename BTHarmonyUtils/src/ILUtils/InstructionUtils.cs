@@ -6,11 +6,13 @@ using HarmonyLib;
 using JetBrains.Annotations;
 
 namespace BTHarmonyUtils.ILUtils {
+
 	/// <summary>
 	/// A Utility class centered around CodeInstructions
 	/// </summary>
 	[PublicAPI]
 	public static class InstructionUtils {
+
 		/// <summary>
 		/// Returns all Labels in the specified range
 		/// </summary>
@@ -135,7 +137,7 @@ namespace BTHarmonyUtils.ILUtils {
 		/// <param name="matcherTuple">matcher instruction</param>
 		/// <returns>true if the instruction roughly equals the matcher-instruction</returns>
 		public static bool InstructionMatches(CodeInstruction instruction, Tuple<OpCode?, object> matcherTuple) {
-			Tuple<OpCode?,object> instructionTuple = InstructionSimplifier.SimplifyForComparison(instruction);
+			Tuple<OpCode?, object> instructionTuple = InstructionSimplifier.SimplifyForComparison(instruction);
 			if (matcherTuple.Item1 != null && instructionTuple.Item1 != matcherTuple.Item1) {
 				return false;
 			}
@@ -170,5 +172,7 @@ namespace BTHarmonyUtils.ILUtils {
 			}
 			return Equals(instructionTuple.Item2, matcherTuple.Item2);
 		}
+
 	}
+
 }

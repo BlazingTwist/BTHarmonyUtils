@@ -12,11 +12,13 @@ using HarmonyLib;
 using JetBrains.Annotations;
 
 namespace BTHarmonyUtils.TranspilerUtils {
+
 	/// <summary>
 	/// Class that acts as an intermediary between user and transpiler
 	/// </summary>
 	[PublicAPI]
 	public class CodeReplacementPatch {
+
 		private readonly int expectedMatches;
 		private readonly MethodInfo markerMethodInfo;
 		private readonly List<CodeInstruction> insertSequence = new List<CodeInstruction>();
@@ -35,8 +37,11 @@ namespace BTHarmonyUtils.TranspilerUtils {
 		/// <exception cref="InvalidDataException">thrown when no prefix, replace and postfix sequence is specified -> cannot match for anything</exception>
 		public CodeReplacementPatch(
 				int expectedMatches = -1,
-				IEnumerable<CodeInstruction> insertInstructionSequence = null, IEnumerable<CodeInstruction> prefixInstructionSequence = null,
-				IEnumerable<CodeInstruction> targetInstructionSequence = null, IEnumerable<CodeInstruction> postfixInstructionSequence = null) {
+				IEnumerable<CodeInstruction> insertInstructionSequence = null,
+				IEnumerable<CodeInstruction> prefixInstructionSequence = null,
+				IEnumerable<CodeInstruction> targetInstructionSequence = null,
+				IEnumerable<CodeInstruction> postfixInstructionSequence = null
+		) {
 			this.expectedMatches = expectedMatches;
 
 			if (insertInstructionSequence != null) {
@@ -110,8 +115,14 @@ namespace BTHarmonyUtils.TranspilerUtils {
 		/// Move the labels in the replace-sequence and first label of postfix-sequence to beginning of insert-sequence
 		/// </summary>
 		/// <returns>a new insert-sequence with adjusted labels</returns>
-		private List<CodeInstruction> MoveLabels(List<CodeInstruction> instructions, int index, int insertLength, int prefixLength, int replaceLength,
-				int postfixLength) {
+		private List<CodeInstruction> MoveLabels(
+				List<CodeInstruction> instructions,
+				int index,
+				int insertLength,
+				int prefixLength,
+				int replaceLength,
+				int postfixLength
+		) {
 			int instructionCount = instructions.Count;
 			List<Label> allLabels = replaceLength > 0
 					? InstructionUtils.FindAllLabels(instructions, index + prefixLength, index + prefixLength + replaceLength)
@@ -217,12 +228,14 @@ namespace BTHarmonyUtils.TranspilerUtils {
 				Apply(instructions);
 			} catch (InvalidDataException e) {
 				if (markerMethodInfo != null) {
-					logger.LogError($"Patching with MarkerMethod {markerMethodInfo.Name} caused error: {e.Message}\n{e.StackTrace}");	
+					logger.LogError($"Patching with MarkerMethod {markerMethodInfo.Name} caused error: {e.Message}\n{e.StackTrace}");
 				} else {
 					string calleeName = new StackFrame(1).GetMethod().Name;
 					logger.LogError($"Patching {calleeName} caused error: {e.Message}\n{e.StackTrace}");
 				}
 			}
 		}
+
 	}
+
 }

@@ -6,7 +6,9 @@ using HarmonyLib;
 using Mono.Cecil;
 
 namespace BTHarmonyUtils.ILUtils {
+
 	internal static class InlineSignatureParser {
+
 		// Based on https://github.com/pardeike/Harmony/blob/381b72c48a9929c55e3469d2bd50b3176a6d5f89/Harmony/Internal/InlineSignatureParser.cs
 		// ... which is based on https://github.com/MonoMod/MonoMod.Common/blob/fb7fed148af165905ee0f2db1bb4c78a0137fb89/Utils/ReflectionHelper.ParseCallSite.cs
 		// ... which is based on https://github.com/jbevain/cecil/blob/96026325ee1cb6627a3e4a32b924ab2905f02553/Mono.Cecil/AssemblyReader.cs#L3448
@@ -27,15 +29,15 @@ namespace BTHarmonyUtils.ILUtils {
 
 						if ((callConv & 0x20) != 0) {
 							method.HasThis = true;
-							callConv = (byte)(callConv & ~0x20);
+							callConv = (byte) (callConv & ~0x20);
 						}
 
 						if ((callConv & 0x40) != 0) {
 							method.ExplicitThis = true;
-							callConv = (byte)(callConv & ~0x40);
+							callConv = (byte) (callConv & ~0x40);
 						}
 
-						method.CallingConvention = (CallingConvention)callConv + 1;
+						method.CallingConvention = (CallingConvention) callConv + 1;
 
 						if ((callConv & 0x10) != 0) {
 							_ = ReadCompressedUInt32();
@@ -57,12 +59,12 @@ namespace BTHarmonyUtils.ILUtils {
 							return first;
 
 						if ((first & 0x40) == 0)
-							return ((uint)(first & ~0x80) << 8)
+							return ((uint) (first & ~0x80) << 8)
 									| reader.ReadByte();
 
-						return ((uint)(first & ~0xc0) << 24)
-								| (uint)reader.ReadByte() << 16
-								| (uint)reader.ReadByte() << 8
+						return ((uint) (first & ~0xc0) << 24)
+								| (uint) reader.ReadByte() << 16
+								| (uint) reader.ReadByte() << 8
 								| reader.ReadByte();
 					}
 
@@ -70,7 +72,7 @@ namespace BTHarmonyUtils.ILUtils {
 					int ReadCompressedInt32() {
 						byte b = reader.ReadByte();
 						_ = reader.BaseStream.Seek(-1, SeekOrigin.Current);
-						int u = (int)ReadCompressedUInt32();
+						int u = (int) ReadCompressedUInt32();
 						int v = u >> 1;
 						if ((u & 1) == 0)
 							return v;
@@ -96,31 +98,31 @@ namespace BTHarmonyUtils.ILUtils {
 						uint token;
 						switch (tokenData & 3) {
 							case 0:
-								token = (uint)TokenType.TypeDef | rid;
+								token = (uint) TokenType.TypeDef | rid;
 								break;
 							case 1:
-								token = (uint)TokenType.TypeRef | rid;
+								token = (uint) TokenType.TypeRef | rid;
 								break;
 							case 2:
-								token = (uint)TokenType.TypeSpec | rid;
+								token = (uint) TokenType.TypeSpec | rid;
 								break;
 							default:
 								token = 0;
 								break;
 						}
-						return moduleFrom.ResolveType((int)token);
+						return moduleFrom.ResolveType((int) token);
 					}
 
 
 					object ReadTypeSignature() {
-						MetadataType etype = (MetadataType)reader.ReadByte();
+						MetadataType etype = (MetadataType) reader.ReadByte();
 						switch (etype) {
 							case MetadataType.ValueType:
 							case MetadataType.Class:
 								return GetTypeDefOrRef();
 
 							case MetadataType.Pointer:
-								return ((Type)ReadTypeSignature()).MakePointerType();
+								return ((Type) ReadTypeSignature()).MakePointerType();
 
 							case MetadataType.FunctionPointer:
 								InlineSignature fptr = new InlineSignature();
@@ -135,7 +137,7 @@ namespace BTHarmonyUtils.ILUtils {
 								return fptr;
 
 							case MetadataType.ByReference:
-								return ((Type)ReadTypeSignature()).MakePointerType();
+								return ((Type) ReadTypeSignature()).MakePointerType();
 
 							// System.Reflection lacks PinnedType.
 							/*
@@ -143,11 +145,11 @@ namespace BTHarmonyUtils.ILUtils {
 								throw new NotSupportedException();
 							*/
 
-							case (MetadataType)0x1d: // SzArray
-								return ((Type)ReadTypeSignature()).MakeArrayType();
+							case (MetadataType) 0x1d: // SzArray
+								return ((Type) ReadTypeSignature()).MakeArrayType();
 
 							case MetadataType.Array:
-								Type atype = (Type)ReadTypeSignature();
+								Type atype = (Type) ReadTypeSignature();
 
 								uint rank = ReadCompressedUInt32();
 
@@ -161,7 +163,7 @@ namespace BTHarmonyUtils.ILUtils {
 								for (int i = 0; i < lowBounds; i++)
 									_ = ReadCompressedInt32();
 
-								return atype.MakeArrayType((int)rank);
+								return atype.MakeArrayType((int) rank);
 
 							case MetadataType.OptionalModifier:
 								return new InlineSignature.ModifierType {
@@ -249,5 +251,7 @@ namespace BTHarmonyUtils.ILUtils {
 				}
 			}
 		}
+
 	}
+
 }
