@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
+using BTHarmonyUtils.@internal;
 using HarmonyLib;
 using JetBrains.Annotations;
 
@@ -55,7 +56,7 @@ namespace BTHarmonyUtils.ILUtils {
 			module = method.Module;
 
 			MethodBody body = method.GetMethodBody();
-			ilBytes = new ByteBuffer(body?.GetILAsByteArray() ?? new byte[0]);
+			ilBytes = new ByteBuffer(body?.GetILAsByteArray() ?? Array.Empty<byte>());
 
 			Type declaringType = method.DeclaringType;
 			if (!(declaringType is null) && declaringType.IsGenericType) {

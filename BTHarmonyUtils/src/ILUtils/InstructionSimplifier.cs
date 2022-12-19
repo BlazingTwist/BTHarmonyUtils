@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
-using BTHarmonyUtils.InstructionSearch;
 using HarmonyLib;
 using JetBrains.Annotations;
 
@@ -21,19 +20,6 @@ namespace BTHarmonyUtils.ILUtils {
 		/// <returns>the Tuple&lt;opcode, operand&gt;</returns>
 		public static Tuple<OpCode?, object> SimplifyForComparison(CodeInstruction codeInstruction) {
 			return SimplifyForComparison(codeInstruction.opcode, codeInstruction.operand);
-		}
-
-		/// <summary>
-		/// Creates a Tuple&lt;opcode, operand&gt; contains a simplified OpCode/Operand
-		/// e.g. 'Ldarg_0' becomes {Ldarg_S, 0}
-		/// </summary>
-		/// <param name="searchMask">searchMask to simplify</param>
-		/// <returns>the Tuple&lt;opcode, operand&gt;</returns>
-		public static Tuple<OpCode?, object> SimplifyForComparison(SearchMask searchMask) {
-			if (!searchMask.allowSimplify || searchMask.opCode == null) {
-				return new Tuple<OpCode?, object>(searchMask.opCode, searchMask.operand);
-			}
-			return SimplifyForComparison(searchMask.opCode.Value, searchMask.operand);
 		}
 
 		/// <summary>

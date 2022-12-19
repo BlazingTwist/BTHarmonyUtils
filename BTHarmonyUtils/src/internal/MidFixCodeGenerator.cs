@@ -7,9 +7,8 @@ using System.Reflection.Emit;
 using System.Text.RegularExpressions;
 using BepInEx.Logging;
 using HarmonyLib;
-using JetBrains.Annotations;
 
-namespace BTHarmonyUtils.MidFixPatch {
+namespace BTHarmonyUtils.@internal {
 
 	/// <summary>
 	/// Class for generating IL-Code for MidFixes
@@ -69,7 +68,7 @@ namespace BTHarmonyUtils.MidFixPatch {
 					}
 					if (!parameterType.IsByRef) {
 						logger.LogError($"MidFix patch '{midFixPatch.FullDescription()}'"
-								+ $" must declare the '__result' parameter with the 'ref' or 'out' keyword");
+								+ " must declare the '__result' parameter with the 'ref' or 'out' keyword");
 						return null;
 					}
 					if (!parameterElementType.IsAssignableFrom(originalReturnType)) {
@@ -204,7 +203,7 @@ namespace BTHarmonyUtils.MidFixPatch {
 			return result;
 		}
 
-		private static void LogErrorTypeMismatch(string parameterName, MethodInfo patchMethod, Type patchType, Type originalType) {
+		private static void LogErrorTypeMismatch(string parameterName, MethodBase patchMethod, Type patchType, Type originalType) {
 			logger.LogError($"MidFix parameter '{parameterName}' for patch: {patchMethod.FullDescription()} is of type '{patchType.FullDescription()}'"
 					+ $" and cannot be assigned from original type '{originalType.FullDescription()}' - patch will be skipped.");
 		}
@@ -212,8 +211,7 @@ namespace BTHarmonyUtils.MidFixPatch {
 		/// <summary>
 		/// straight copy from Harmony GetIndOpcode
 		/// </summary>
-		[PublicAPI]
-		public static OpCode GetIndOpcode(Type type) {
+		private static OpCode GetIndOpcode(Type type) {
 			if (type.IsEnum) {
 				return OpCodes.Ldind_I4;
 			}
@@ -244,6 +242,7 @@ namespace BTHarmonyUtils.MidFixPatch {
 			if (type == typeof(int)) {
 				return OpCodes.Ldind_I4;
 			}
+			// ReSharper disable once ConvertIfStatementToReturnStatement
 			if (type == typeof(long)) {
 				return OpCodes.Ldind_I8;
 			}

@@ -130,6 +130,24 @@ namespace BTHarmonyUtils.ILUtils {
 			return value;
 		}
 
+		/// <summary>
+		/// Read a Null-Terminated String from the buffer
+		/// </summary>
+		/// <returns>string from the buffer</returns>
+		public string ReadNullTerminatedString() {
+			int stringLength = 0;
+			while ((Position + stringLength) < buffer.Length) {
+				if (buffer[Position + stringLength] == 0) {
+					break;
+				}
+				stringLength++;
+			}
+
+			string result = System.Text.Encoding.Default.GetString(ReadBytes(stringLength));
+			Position++; // skip null char
+			return result;
+		}
+
 		// ReSharper disable once ParameterOnlyUsedForPreconditionCheck.Local
 		private void CheckCanRead(int count) {
 			if (Position + count > buffer.Length) {

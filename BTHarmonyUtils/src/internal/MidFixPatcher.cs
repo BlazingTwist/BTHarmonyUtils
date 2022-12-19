@@ -3,11 +3,11 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using BepInEx.Logging;
-using BTHarmonyUtils.TranspilerUtils;
+using BTHarmonyUtils.MidFixPatch;
 using HarmonyLib;
 using JetBrains.Annotations;
 
-namespace BTHarmonyUtils.MidFixPatch {
+namespace BTHarmonyUtils.@internal {
 
 	/// <summary>
 	/// Applies the MidFix patches.
@@ -20,13 +20,13 @@ namespace BTHarmonyUtils.MidFixPatch {
 
 			public readonly MethodInfo midFixMethod;
 			public readonly MidFixInstructionMatcher instructionMatcher;
-			public readonly MethodBase patchTargetMethod;
+			public readonly List<MethodBase> patchTargetMethods;
 			public readonly int priority;
 
-			public MidFixPatch(MethodInfo midFixMethod, MethodInfo instructionMatcherMethod, MethodBase patchTargetMethod, int priority) {
+			public MidFixPatch(MethodInfo midFixMethod, MethodInfo instructionMatcherMethod, List<MethodBase> patchTargetMethods, int priority) {
 				this.midFixMethod = midFixMethod;
 				instructionMatcher = instructionMatcherMethod.Invoke(null, null) as MidFixInstructionMatcher;
-				this.patchTargetMethod = patchTargetMethod;
+				this.patchTargetMethods = patchTargetMethods;
 				this.priority = priority;
 			}
 
@@ -44,20 +44,26 @@ namespace BTHarmonyUtils.MidFixPatch {
 				return;
 			}
 
-			MethodBase resolvedMethod = PatcherUtils.ResolveHarmonyMethod(info, patcherMethod.Name);
+			List<MethodBase> resolvedMethods = PatcherUtils.ResolveTargetMethod(patcherMethod.DeclaringType)?.ToList()
+					?? new List<MethodBase> { PatcherUtils.ResolveHarmonyMethod(info, patcherMethod.DeclaringType?.Name + "::" + patcherMethod.Name) };
 			MethodInfo instructionMatcherMethod = midFixAttribute.ResolveInstructionMatcherMethod(patcherMethod);
-			if (instructionMatcherMethod.ReturnType == typeof(MidFixInstructionMatcher)) {
-				logger.LogError("InstructionMatcherMethod for patch " + patcherMethod.FullDescription() + " does not return type "
-						+ nameof(MidFixInstructionMatcher));
+			if (!typeof(MidFixInstructionMatcher).IsAssignableFrom(instructionMatcherMethod.ReturnType)) {
+				logger.LogError($"InstructionMatcherMethod '{instructionMatcherMethod}' for patch '{patcherMethod}' does not return type "
+						+ typeof(MidFixInstructionMatcher) + $" and instead returns '{instructionMatcherMethod.ReturnType}'");
 				return;
 			}
 			if (!instructionMatcherMethod.IsStatic || instructionMatcherMethod.GetParameters().Any()) {
 				logger.LogError("InstructionMatcherMethod for patch " + patcherMethod.FullDescription() + " may not take ANY parameters");
 				return;
 			}
-			midFixPatches.Add(new MidFixPatch(patcherMethod, instructionMatcherMethod, resolvedMethod, midFixAttribute.priority));
+			midFixPatches.Add(new MidFixPatch(patcherMethod, instructionMatcherMethod, resolvedMethods, midFixAttribute.priority));
 			midFixPatches.Sort((a, b) => b.priority.CompareTo(a.priority)); // in-place descending sort
-			harmony.Patch(original: resolvedMethod, transpiler: new HarmonyMethod(SymbolExtensions.GetMethodInfo(() => MidFixTranspiler(null, null, null))));
+			foreach (MethodBase resolvedMethod in resolvedMethods) {
+				harmony.Patch(
+						original: resolvedMethod,
+						transpiler: new HarmonyMethod(SymbolExtensions.GetMethodInfo(() => MidFixTranspiler(null, null, null)))
+				);
+			}
 		}
 
 		[UsedImplicitly]
@@ -66,7 +72,7 @@ namespace BTHarmonyUtils.MidFixPatch {
 				MethodBase patchTargetMethod,
 				ILGenerator generator
 		) {
-			List<MidFixPatch> relevantPatches = midFixPatches.Where(patch => patch.patchTargetMethod == patchTargetMethod).ToList();
+			List<MidFixPatch> relevantPatches = midFixPatches.Where(patch => patch.patchTargetMethods.Contains(patchTargetMethod)).ToList();
 			if (relevantPatches.Count == 0) {
 				logger.LogError("MidFix transpiler called, but no MidFix patches were registered for method " + patchTargetMethod.FullDescription());
 				return codeInstructions;

@@ -36,20 +36,20 @@
     </PropertyGroup>
     <ItemGroup>
         <Reference Include="0Harmony, Version=2.4.0.0, Culture=neutral, PublicKeyToken=null">
-          <HintPath>..\BepInEx_Dependencies\0Harmony.dll</HintPath>
+            <HintPath>..\BepInEx_Dependencies\0Harmony.dll</HintPath>
         </Reference>
         <Reference Include="BepInEx, Version=5.4.9.0, Culture=neutral, PublicKeyToken=null">
-          <HintPath>..\BepInEx_Dependencies\BepInEx.dll</HintPath>
+            <HintPath>..\BepInEx_Dependencies\BepInEx.dll</HintPath>
         </Reference>
         <Reference Include="BepInEx.Harmony, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
-          <HintPath>..\BepInEx_Dependencies\BepInEx.Harmony.dll</HintPath>
+            <HintPath>..\BepInEx_Dependencies\BepInEx.Harmony.dll</HintPath>
         </Reference>
         <Reference Include="JetBrains.Annotations, Version=2021.2.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325">
-          <HintPath>..\packages\JetBrains.Annotations.2021.2.0\lib\net20\JetBrains.Annotations.dll</HintPath>
-          <Private>True</Private>
+            <HintPath>..\packages\JetBrains.Annotations.2021.2.0\lib\net20\JetBrains.Annotations.dll</HintPath>
+            <Private>True</Private>
         </Reference>
         <Reference Include="Mono.Cecil, Version=0.10.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e">
-          <HintPath>..\BepInEx_Dependencies\Mono.Cecil.dll</HintPath>
+            <HintPath>..\BepInEx_Dependencies\Mono.Cecil.dll</HintPath>
         </Reference>
         <Reference Include="System" />
         <Reference Include="System.Core" />
@@ -59,22 +59,32 @@
     <ItemGroup>
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="src\ILUtils\ByteBuffer.cs" />
-        <Compile Include="src\ILUtils\InlineSignatureParser.cs" />
         <Compile Include="src\ILUtils\InstructionSimplifier.cs" />
         <Compile Include="src\ILUtils\InstructionUtils.cs" />
         <Compile Include="src\ILUtils\MethodBodyReader.cs" />
+        <Compile Include="src\InstructionSearch\InstructionMask.cs" />
         <Compile Include="src\InstructionSearch\InstructionSearcher.cs" />
         <Compile Include="src\InstructionSearch\SearchMask.cs" />
+        <Compile Include="src\internal\InlineSignatureParser.cs" />
+        <Compile Include="src\internal\InstructionReplacementTranspiler.cs" />
+        <Compile Include="src\internal\ITranspilerPatch.cs" />
+        <Compile Include="src\internal\MidFixCodeGenerator.cs" />
+        <Compile Include="src\internal\MidFixPatcher.cs" />
         <Compile Include="src\MidFixPatch\BTHarmonyMidFix.cs" />
-        <Compile Include="src\MidFixPatch\MidFixCodeGenerator.cs" />
         <Compile Include="src\MidFixPatch\MidFixInstructionMatcher.cs" />
-        <Compile Include="src\MidFixPatch\MidFixPatcher.cs" />
         <Compile Include="src\PatcherUtils.cs" />
         <Compile Include="src\TranspilerUtils\CodeReplacementPatch.cs" />
-        <Compile Include="src\TranspilerUtils\TranspilerMarkers.cs" />
     </ItemGroup>
     <ItemGroup>
-      <None Include="packages.config" />
+        <None Include="packages.config" />
+    </ItemGroup>
+    <ItemGroup>
+        <Content Include="README.md" />
+        <Content Include="wiki\img\insertNoPullup.jpg" />
+        <Content Include="wiki\img\insertYesPullup.jpg" />
+        <Content Include="wiki\img\originalInstructions.jpg" />
+        <Content Include="wiki\img\replaceNoPullup.jpg" />
+        <Content Include="wiki\img\replaceYesPullup.jpg" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

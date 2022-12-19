@@ -52,7 +52,7 @@ namespace BTHarmonyUtils.ILUtils {
 		/// <param name="instructions">instructions to check</param>
 		/// <param name="sequence">sequence to look for</param>
 		/// <returns>the startIndex for every matching sequence</returns>
-		public static List<int> FindInstructionSequence(List<CodeInstruction> instructions, List<SearchMask> sequence) {
+		public static List<int> FindInstructionSequence(List<CodeInstruction> instructions, List<InstructionMask> sequence) {
 			List<int> result = new List<int>();
 
 			for (int i = 0; i < instructions.Count; i++) {
@@ -97,7 +97,7 @@ namespace BTHarmonyUtils.ILUtils {
 		/// <param name="sequence">matcher instructions</param>
 		/// <param name="offset">offset the instruction list</param>
 		/// <returns>true if the instructionSequence at the specified offset matches the matcher-sequence</returns>
-		public static bool SequenceMatches(List<CodeInstruction> instructions, List<SearchMask> sequence, int offset) {
+		public static bool SequenceMatches(List<CodeInstruction> instructions, List<InstructionMask> sequence, int offset) {
 			if (sequence.Count == 0) {
 				return true;
 			}
@@ -107,9 +107,9 @@ namespace BTHarmonyUtils.ILUtils {
 			}
 
 			for (int i = 0; i < sequence.Count; i++) {
-				CodeInstruction a = instructions[i + offset];
-				SearchMask b = sequence[i];
-				if (!InstructionMatches(a, InstructionSimplifier.SimplifyForComparison(b))) {
+				CodeInstruction instruction = instructions[i + offset];
+				InstructionMask mask = sequence[i];
+				if (!mask.Matches(instruction)) {
 					return false;
 				}
 			}
@@ -138,39 +138,56 @@ namespace BTHarmonyUtils.ILUtils {
 		/// <returns>true if the instruction roughly equals the matcher-instruction</returns>
 		public static bool InstructionMatches(CodeInstruction instruction, Tuple<OpCode?, object> matcherTuple) {
 			Tuple<OpCode?, object> instructionTuple = InstructionSimplifier.SimplifyForComparison(instruction);
-			if (matcherTuple.Item1 != null && instructionTuple.Item1 != matcherTuple.Item1) {
-				return false;
-			}
+			return OpCodeMatches(instructionTuple.Item1, matcherTuple.Item1)
+					&& OperandMatches(instructionTuple.Item2, matcherTuple.Item2);
+		}
 
-			if (matcherTuple.Item2 == null) {
+		/// <summary>
+		/// Checks if an OpCode matcher matches an OpCode
+		/// </summary>
+		/// <param name="opCode">the opCode to match</param>
+		/// <param name="matcherOpCode">the opCode to use as a matcher</param>
+		/// <returns></returns>
+		public static bool OpCodeMatches(OpCode? opCode, OpCode? matcherOpCode) {
+			return matcherOpCode == null || opCode == matcherOpCode;
+		}
+
+		/// <summary>
+		/// Checks if an Operand matcher matches an Operand
+		/// </summary>
+		/// <param name="operand">the operand to match</param>
+		/// <param name="matcherOperand">the operand to use as a matcher</param>
+		/// <returns></returns>
+		public static bool OperandMatches(object operand, object matcherOperand) {
+			if (matcherOperand == null) {
 				return true;
 			}
 
-			if (instructionTuple.Item2 == null) {
+			if (operand == null) {
 				return false;
 			}
 
-			if (instructionTuple.Item2 is LocalBuilder localBuilder) {
-				if (matcherTuple.Item2 is int index) {
+			if (operand is LocalBuilder localBuilder) {
+				if (matcherOperand is int index) {
 					return localBuilder.LocalIndex == index;
 				}
-				if (matcherTuple.Item2 is Type type) {
+				if (matcherOperand is Type type) {
 					return localBuilder.LocalType == type;
 				}
 			}
 
-			Type operandType = instructionTuple.Item2.GetType();
-			Type matcherOperandType = matcherTuple.Item2.GetType();
+			Type operandType = operand.GetType();
+			Type matcherOperandType = matcherOperand.GetType();
 
 			if (AccessTools.IsNumber(operandType)) {
 				if (AccessTools.IsInteger(matcherOperandType)) {
-					return Convert.ToInt64(instructionTuple.Item2) == Convert.ToInt64(matcherTuple.Item2);
+					return Convert.ToInt64(operand) == Convert.ToInt64(matcherOperand);
 				}
 				if (AccessTools.IsFloatingPoint(matcherOperandType)) {
-					return Math.Abs(Convert.ToDouble(instructionTuple.Item2) - Convert.ToDouble(matcherTuple.Item2)) < double.Epsilon;
+					return Math.Abs(Convert.ToDouble(operand) - Convert.ToDouble(matcherOperand)) < double.Epsilon;
 				}
 			}
-			return Equals(instructionTuple.Item2, matcherTuple.Item2);
+			return Equals(operand, matcherOperand);
 		}
 
 	}

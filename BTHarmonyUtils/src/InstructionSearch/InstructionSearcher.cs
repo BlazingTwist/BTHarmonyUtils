@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using BepInEx.Logging;
 using BTHarmonyUtils.ILUtils;
 using HarmonyLib;
@@ -37,7 +38,7 @@ namespace BTHarmonyUtils.InstructionSearch {
 		/// <exception cref="InvalidDataException">thrown when an unexpected amount of matches is found</exception>
 		public List<List<CodeInstruction>> DoSearch(List<CodeInstruction> instructions) {
 			int searchSequenceLength = searchMasks.Count;
-			List<int> sequenceMatches = InstructionUtils.FindInstructionSequence(instructions, searchMasks);
+			List<int> sequenceMatches = InstructionUtils.FindInstructionSequence(instructions, searchMasks.Select(mask => mask.mask).ToList());
 			int sequenceMatchesCount = sequenceMatches.Count;
 
 			if (expectedMatches >= 0 && sequenceMatchesCount != expectedMatches) {

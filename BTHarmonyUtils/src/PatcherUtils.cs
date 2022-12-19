@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using BepInEx.Logging;
 using BTHarmonyUtils.ILUtils;
+using BTHarmonyUtils.@internal;
 using BTHarmonyUtils.MidFixPatch;
 using HarmonyLib;
 using JetBrains.Annotations;
@@ -106,10 +107,84 @@ namespace BTHarmonyUtils {
 			return HarmonyMethod.Merge(harmonyInfo);
 		}
 
+		internal static void LogTargetMethodInvalidDeclaration(Type declaringType, MethodInfo method, string errorString, bool hasTargetMethodAttribute) {
+			string attributeName = hasTargetMethodAttribute ? nameof(HarmonyTargetMethod) : nameof(HarmonyTargetMethods);
+			string returnTypeString = hasTargetMethodAttribute ? "MethodBase" : "IEnumerable<MethodBase>";
+			logger.LogError($"Patch class '{declaringType.Name}' contains {attributeName} provider '{method.Name}', {errorString}"
+					+ $"\ntry 'private static {returnTypeString} {method.Name}() {{ /* ... */ }}'");
+		}
+
+		internal static void LogTargetMethodNoResult(Type declaringType, MethodInfo method, bool hasTargetMethodAttribute) {
+			string attributeName = hasTargetMethodAttribute ? nameof(HarmonyTargetMethod) : nameof(HarmonyTargetMethods);
+			logger.LogError($"Patch class '{declaringType.Name}' contains {attributeName} provider '{method.Name}', but the return value was null!");
+		}
+
+		internal static IEnumerable<MethodBase> ResolveTargetMethod(Type declaringType) {
+			List<MethodBase> targetMethods = new List<MethodBase>();
+			foreach (MethodInfo method in declaringType.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)) {
+				HarmonyTargetMethod targetMethodAttribute = method.GetCustomAttribute<HarmonyTargetMethod>(false);
+				HarmonyTargetMethods targetMethodsAttribute = method.GetCustomAttribute<HarmonyTargetMethods>(false);
+				if (targetMethodAttribute == null && targetMethodsAttribute == null) {
+					continue;
+				}
+
+				if (!method.IsStatic) {
+					LogTargetMethodInvalidDeclaration(
+							declaringType, method,
+							"but it is not static!", targetMethodAttribute != null
+					);
+					continue;
+				}
+
+				int numParameters = method.GetParameters().Length;
+				if (numParameters > 0) {
+					LogTargetMethodInvalidDeclaration(
+							declaringType, method,
+							$"but it takes {numParameters} parameters", targetMethodAttribute != null
+					);
+					continue;
+				}
+
+				if (targetMethodAttribute != null && targetMethodsAttribute != null) {
+					logger.LogError($"Patch class '{declaringType.Name}' Method '{method.Name}'"
+							+ $" may not contain the Attributes '{nameof(HarmonyTargetMethod)}' and '{nameof(HarmonyTargetMethods)}' at the same time."
+							+ $"\ntry '[{nameof(HarmonyTargetMethods)}] private static IEnumerable<MethodBase> {method.Name}() {{ /* ... */ }}'");
+					continue;
+				}
+
+				if (targetMethodAttribute != null) {
+					if (!typeof(MethodBase).IsAssignableFrom(method.ReturnType)) {
+						LogTargetMethodInvalidDeclaration(declaringType, method, $"but does not return '{nameof(MethodBase)}'", true);
+						continue;
+					}
+
+					if (method.Invoke(null, null) is MethodBase result) {
+						targetMethods.Add(result);
+					} else {
+						LogTargetMethodNoResult(declaringType, method, true);
+					}
+				} else {
+					if (!typeof(IEnumerable<MethodBase>).IsAssignableFrom(method.ReturnType)
+							|| method.ReturnType.GenericTypeArguments.Length <= 0
+							|| !typeof(MethodBase).IsAssignableFrom(method.ReturnType.GenericTypeArguments[0])) {
+						LogTargetMethodInvalidDeclaration(declaringType, method, "but does not return 'IEnumerable<MethodBase>'", false);
+						continue;
+					}
+
+					if (method.Invoke(null, null) is IEnumerable<object> result) {
+						targetMethods.AddRange((result).Select(x => x as MethodBase));
+					} else {
+						LogTargetMethodNoResult(declaringType, method, false);
+					}
+				}
+			}
+			return targetMethods.Count <= 0 ? null : targetMethods;
+		}
+
 		/// <summary>
 		/// resolve the HarmonyMethod info from HarmonyAnnotations to a method
 		/// </summary>
-		public static MethodBase ResolveHarmonyMethod(HarmonyMethod info, string patchName) {
+		internal static MethodBase ResolveHarmonyMethod(HarmonyMethod info, string patchName) {
 			switch (info.methodType ?? MethodType.Normal) {
 				case MethodType.Normal: {
 					if (string.IsNullOrEmpty(info.methodName)) {
@@ -173,7 +248,7 @@ namespace BTHarmonyUtils {
 				case MethodType.Constructor: {
 					ConstructorInfo constructorInfo = AccessTools.DeclaredConstructor(info.declaringType, info.argumentTypes);
 					if (constructorInfo == null) {
-						LogPatchFailure(patchName, $"Could not find constructor"
+						LogPatchFailure(patchName, "Could not find constructor"
 								+ $" with {info.argumentTypes.Description()} parameters in type {info.declaringType.FullDescription()}");
 					}
 					return constructorInfo;

@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using HarmonyLib;
 using Mono.Cecil;
 
-namespace BTHarmonyUtils.ILUtils {
+namespace BTHarmonyUtils.@internal {
 
 	internal static class InlineSignatureParser {
 
@@ -115,8 +115,8 @@ namespace BTHarmonyUtils.ILUtils {
 
 
 					object ReadTypeSignature() {
-						MetadataType etype = (MetadataType) reader.ReadByte();
-						switch (etype) {
+						MetadataType eType = (MetadataType) reader.ReadByte();
+						switch (eType) {
 							case MetadataType.ValueType:
 							case MetadataType.Class:
 								return GetTypeDefOrRef();
@@ -125,8 +125,8 @@ namespace BTHarmonyUtils.ILUtils {
 								return ((Type) ReadTypeSignature()).MakePointerType();
 
 							case MetadataType.FunctionPointer:
-								InlineSignature fptr = new InlineSignature();
-								ReadMethodSignature(fptr);
+								InlineSignature fPtr = new InlineSignature();
+								ReadMethodSignature(fPtr);
 								/* Note: Inline function pointer signatures cannot be made pointer / byref / array / ... types themselves.
 								 * That's because InlineSignature does not extend Type, unlike Cecil, where function pointers are literal types.
 								 * Unfortunately System.Reflection does not allow for creating function pointer types on demand.
@@ -134,7 +134,7 @@ namespace BTHarmonyUtils.ILUtils {
 								 * In the worst case, void* might be used instead of (fnptrtype)*
 								 * -ade
 								 */
-								return fptr;
+								return fPtr;
 
 							case MetadataType.ByReference:
 								return ((Type) ReadTypeSignature()).MakePointerType();
@@ -149,7 +149,7 @@ namespace BTHarmonyUtils.ILUtils {
 								return ((Type) ReadTypeSignature()).MakeArrayType();
 
 							case MetadataType.Array:
-								Type atype = (Type) ReadTypeSignature();
+								Type aType = (Type) ReadTypeSignature();
 
 								uint rank = ReadCompressedUInt32();
 
@@ -163,20 +163,20 @@ namespace BTHarmonyUtils.ILUtils {
 								for (int i = 0; i < lowBounds; i++)
 									_ = ReadCompressedInt32();
 
-								return atype.MakeArrayType((int) rank);
+								return aType.MakeArrayType((int) rank);
 
 							case MetadataType.OptionalModifier:
 								return new InlineSignature.ModifierType {
 										IsOptional = true,
 										Modifier = GetTypeDefOrRef(),
-										Type = ReadTypeSignature()
+										Type = ReadTypeSignature(),
 								};
 
 							case MetadataType.RequiredModifier:
 								return new InlineSignature.ModifierType {
 										IsOptional = false,
 										Modifier = GetTypeDefOrRef(),
-										Type = ReadTypeSignature()
+										Type = ReadTypeSignature(),
 								};
 
 							// System.Reflection lacks SentinelType.
@@ -188,7 +188,7 @@ namespace BTHarmonyUtils.ILUtils {
 							case MetadataType.Var:
 							case MetadataType.MVar:
 							case MetadataType.GenericInstance:
-								throw new NotSupportedException($"Unsupported generic callsite element: {etype}");
+								throw new NotSupportedException($"Unsupported generic callsite element: {eType}");
 
 							case MetadataType.Object:
 								return typeof(object);
@@ -243,9 +243,9 @@ namespace BTHarmonyUtils.ILUtils {
 
 							case MetadataType.String:
 								return typeof(string);
-
+							
 							default:
-								throw new NotSupportedException($"Unsupported callsite element: {etype}");
+								throw new NotSupportedException($"Unsupported callsite element: {eType}");
 						}
 					}
 				}

@@ -12,8 +12,19 @@ namespace BTHarmonyUtils.MidFixPatch {
 	[PublicAPI]
 	public class BTHarmonyMidFix : Attribute {
 
+		/// <summary>
+		/// type containing the instruction matcher method - only required if in a different class
+		/// </summary>
 		public Type instructionMatcherDeclaringType { get; }
+		
+		/// <summary>
+		/// name of the method that provides the instruction matcher for this midFix
+		/// </summary>
 		public string instructionMatcherMethodName { get; }
+		
+		/// <summary>
+		/// if you are using multiple midFix patches for the same original method, you can specify their priority, higher priorities execute first
+		/// </summary>
 		public int priority { get; }
 
 		/// <param name="instructionMatcherMethodName">name of the method that provides the instruction matcher for this midFix</param>

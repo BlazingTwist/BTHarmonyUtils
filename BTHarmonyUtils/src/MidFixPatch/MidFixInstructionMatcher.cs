@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Reflection;
 using System.Reflection.Emit;
 using BepInEx.Logging;
 using BTHarmonyUtils.ILUtils;
-using BTHarmonyUtils.TranspilerUtils;
+using BTHarmonyUtils.InstructionSearch;
+using BTHarmonyUtils.@internal;
 using HarmonyLib;
 using JetBrains.Annotations;
 
@@ -21,9 +20,8 @@ namespace BTHarmonyUtils.MidFixPatch {
 	public class MidFixInstructionMatcher {
 
 		private readonly int expectedMatches;
-		private readonly MethodInfo markerMethodInfo;
-		private readonly List<CodeInstruction> prefixSequence = new List<CodeInstruction>();
-		private readonly List<CodeInstruction> postfixSequence = new List<CodeInstruction>();
+		private readonly List<InstructionMask> prefixSequence = new List<InstructionMask>();
+		private readonly List<InstructionMask> postfixSequence = new List<InstructionMask>();
 
 		/// <summary>
 		/// A construct for matching CodeInstructions in methods
@@ -39,10 +37,10 @@ namespace BTHarmonyUtils.MidFixPatch {
 		) {
 			this.expectedMatches = expectedMatches;
 			if (prefixInstructionSequence != null) {
-				prefixSequence.AddRange(prefixInstructionSequence);
+				prefixSequence.AddRange(prefixInstructionSequence.Select(InstructionMask.MatchCodeInstruction));
 			}
 			if (postfixInstructionSequence != null) {
-				postfixSequence.AddRange(postfixInstructionSequence);
+				postfixSequence.AddRange(postfixInstructionSequence.Select(InstructionMask.MatchCodeInstruction));
 			}
 			if (prefixSequence.Count == 0 && postfixSequence.Count == 0) {
 				throw new InvalidDataException("No matchers specified, cannot apply patch!");
@@ -53,35 +51,20 @@ namespace BTHarmonyUtils.MidFixPatch {
 		/// A construct for matching CodeInstructions in methods
 		/// </summary>
 		/// <param name="expectedMatches">Amount of matches that this Patch should encounter, or less than 0 for any amount</param>
-		/// <param name="markerMethod">A method that is using TranspilerMarkers to define prefix/postfix -sequences</param>
-		/// <exception cref="InvalidDataException">thrown when a sequence isn't closed or there is no prefix and postfix sequence</exception>
-		public MidFixInstructionMatcher(int expectedMatches, Expression<Action> markerMethod) {
+		/// <param name="prefixInstructionSequence">Sequence of instructions that should occur before the MidFix</param>
+		/// <param name="postfixInstructionSequence">Sequence of instructions that should occur after the MidFix</param>
+		/// <exception cref="InvalidDataException">thrown when no prefix and postfix sequence is specified -> cannot match for anything</exception>
+		public MidFixInstructionMatcher(
+				int expectedMatches = -1,
+				IEnumerable<InstructionMask> prefixInstructionSequence = null,
+				IEnumerable<InstructionMask> postfixInstructionSequence = null
+		) {
 			this.expectedMatches = expectedMatches;
-			Dictionary<TranspilerMarkers.Markers, List<CodeInstruction>> sequenceDict = new Dictionary<TranspilerMarkers.Markers, List<CodeInstruction>>();
-			TranspilerMarkers.Markers? currentSequence = null;
-			markerMethodInfo = SymbolExtensions.GetMethodInfo(markerMethod);
-			List<CodeInstruction> markerInstructions = new MethodBodyReader(markerMethodInfo).ReadInstructions();
-			foreach (CodeInstruction markerInstruction in markerInstructions.Where(markerInstruction => markerInstruction.opcode != OpCodes.Nop)) {
-				if (InstructionUtils.InstructionMatches(markerInstruction, TranspilerMarkers.ci_insertSequenceStart)
-						|| InstructionUtils.InstructionMatches(markerInstruction, TranspilerMarkers.ci_targetSequenceStart)
-						|| InstructionUtils.InstructionMatches(markerInstruction, TranspilerMarkers.ci_LastSequenceEnd)) {
-					currentSequence = null;
-				} else if (InstructionUtils.InstructionMatches(markerInstruction, TranspilerMarkers.ci_prefixSequenceStart)) {
-					currentSequence = TranspilerMarkers.Markers.prefixSequence;
-					sequenceDict.Add(TranspilerMarkers.Markers.prefixSequence, prefixSequence);
-				} else if (InstructionUtils.InstructionMatches(markerInstruction, TranspilerMarkers.ci_postfixSequenceStart)) {
-					currentSequence = TranspilerMarkers.Markers.postfixSequence;
-					sequenceDict.Add(TranspilerMarkers.Markers.postfixSequence, postfixSequence);
-				} else {
-					if (currentSequence == null) {
-						continue;
-					}
-					sequenceDict[currentSequence.Value].Add(markerInstruction);
-				}
+			if (prefixInstructionSequence != null) {
+				prefixSequence.AddRange(prefixInstructionSequence);
 			}
-
-			if (currentSequence != null) {
-				throw new InvalidDataException($"MarkerMethod is missing {nameof(TranspilerMarkers.LastSequenceEnd)} marker!");
+			if (postfixInstructionSequence != null) {
+				postfixSequence.AddRange(postfixInstructionSequence);
 			}
 			if (prefixSequence.Count == 0 && postfixSequence.Count == 0) {
 				throw new InvalidDataException("No matchers specified, cannot apply patch!");
@@ -181,12 +164,8 @@ namespace BTHarmonyUtils.MidFixPatch {
 			try {
 				Apply(instructions, midFixPatch, originalMethod, generator);
 			} catch (InvalidDataException e) {
-				if (markerMethodInfo != null) {
-					logger.LogError($"Patching with MarkerMethod {markerMethodInfo.Name} caused error: {e.Message}\n{e.StackTrace}");
-				} else {
-					string calleeName = new StackFrame(1).GetMethod().Name;
-					logger.LogError($"Patching {calleeName} caused error: {e.Message}\n{e.StackTrace}");
-				}
+				string calleeName = new StackFrame(1).GetMethod().Name;
+				logger.LogError($"Patching {calleeName} caused error: {e.Message}\n{e.StackTrace}");
 			}
 		}
 
