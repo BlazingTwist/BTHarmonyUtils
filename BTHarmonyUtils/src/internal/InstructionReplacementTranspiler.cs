@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -15,6 +16,50 @@ namespace BTHarmonyUtils.@internal {
 		ImmediateNext,
 		PostfixOnly, // used for backwards compatibility when only the first PostFixSequence label was pulled up
 		None,
+
+	}
+
+	internal static class LabelPullUpExtensions {
+
+		public static bool CanPullUp(this LabelPullUp pullUp, TranspilerContext context) {
+			switch (pullUp) {
+				case LabelPullUp.ImmediateNext:
+					return context.postfixIndex < context.instructions.Count;
+				case LabelPullUp.PostfixOnly:
+					return context.postfixLength > 0;
+				case LabelPullUp.None:
+					return false;
+				default:
+					throw new ArgumentOutOfRangeException(nameof(pullUp), pullUp, null);
+			}
+		}
+
+	}
+
+	internal readonly struct TranspilerContext {
+
+		public readonly List<CodeInstruction> instructions;
+		public readonly int replaceIndex;
+		public readonly int postfixIndex;
+		public readonly int insertLength;
+		public readonly int replaceLength;
+		public readonly int postfixLength;
+
+		public TranspilerContext(
+				List<CodeInstruction> instructions,
+				int index,
+				int insertLength,
+				int prefixLength,
+				int replaceLength,
+				int postfixLength
+		) : this() {
+			this.instructions = instructions;
+			replaceIndex = index + prefixLength;
+			postfixIndex = index + prefixLength + replaceLength;
+			this.insertLength = insertLength;
+			this.replaceLength = replaceLength;
+			this.postfixLength = postfixLength;
+		}
 
 	}
 
@@ -113,13 +158,15 @@ namespace BTHarmonyUtils.@internal {
 					if (index - previousIndex < replaceLength) {
 						throw new InvalidDataException("CodeReplacementPatch has matched overlapping replaceSequences! Mod may be outdated!");
 					}
+					previousIndex = index;
 				}
 			}
 
 			// iterate over indexes in reverse, this way we don't have to update the indexes after every removal / insertion
 			for (int i = sequenceMatchesCount - 1; i >= 0; i--) {
 				int index = sequenceMatches[i];
-				List<CodeInstruction> insertSequenceWithLabels = MoveLabels(instructions, index, insertLength, prefixLength, replaceLength, postfixLength);
+				TranspilerContext context = new TranspilerContext(instructions, index, insertLength, prefixLength, replaceLength, postfixLength);
+				List<CodeInstruction> insertSequenceWithLabels = MoveLabels(context);
 				instructions.InsertRange(index + prefixLength + replaceLength, insertSequenceWithLabels);
 				instructions.RemoveRange(index + prefixLength, replaceLength);
 			}
@@ -134,59 +181,46 @@ namespace BTHarmonyUtils.@internal {
 			}
 		}
 
-		/// <summary>
-		/// Move the labels in the replace-sequence and first label of postfix-sequence to beginning of insert-sequence
-		/// </summary>
-		/// <returns>a new insert-sequence with adjusted labels</returns>
-		private List<CodeInstruction> MoveLabels(
-				List<CodeInstruction> instructions,
-				int index,
-				int insertLength,
-				int prefixLength,
-				int replaceLength,
-				int postfixLength
-		) {
-			List<CodeInstruction> updatedInsertSequence = insertSequence;
-
-			if (insertLength > 0) {
-				// if insertSequence is given, compute pullUp labels, otherwise pullUp has no effect
-				int pullUpIndex = index + prefixLength + replaceLength;
-				bool canPullUp = (pullUp == LabelPullUp.PostfixOnly && postfixLength > 0)
-						|| (pullUp == LabelPullUp.ImmediateNext && pullUpIndex < instructions.Count);
-				if (canPullUp) {
-					CodeInstruction pullUpInstruction = instructions[pullUpIndex];
-					CodeInstruction newFirstInstruction = new CodeInstruction(insertSequence[0]);
-					newFirstInstruction.labels.AddRange(pullUpInstruction.labels);
-					pullUpInstruction.labels.Clear();
-
-					List<CodeInstruction> pullUpAdjustedInsertSequence = new List<CodeInstruction> { newFirstInstruction };
-					pullUpAdjustedInsertSequence.AddRange(insertSequence.GetRange(1, insertLength - 1));
-					updatedInsertSequence = pullUpAdjustedInsertSequence;
-				}
+		private List<CodeInstruction> MoveLabels(TranspilerContext context) {
+			List<Label> newFirstInstructionLabels = GatherMoveLabels(context);
+			if (newFirstInstructionLabels.Count <= 0) {
+				return insertSequence;
 			}
 
-			if (replaceLength > 0) {
+			List<CodeInstruction> newInsertSequence = new List<CodeInstruction>();
+			if (context.insertLength > 0) {
+				CodeInstruction newFirstInstruction = new CodeInstruction(insertSequence[0]);
+				newFirstInstruction.labels.AddRange(newFirstInstructionLabels);
+				newInsertSequence.Add(newFirstInstruction);
+				newInsertSequence.AddRange(insertSequence.GetRange(1, context.insertLength - 1));
+			} else if (context.postfixIndex < context.instructions.Count) {
+				CodeInstruction postfixInstruction = context.instructions[context.postfixIndex];
+				postfixInstruction.labels.AddRange(newFirstInstructionLabels);
+			} else {
+				CodeInstruction nopInstruction = new CodeInstruction(OpCodes.Nop);
+				nopInstruction.labels.AddRange(newFirstInstructionLabels);
+				newInsertSequence.Add(nopInstruction);
+			}
+			return newInsertSequence;
+		}
+
+		private List<Label> GatherMoveLabels(TranspilerContext context) {
+			List<Label> newFirstInstructionLabels = new List<Label>();
+
+			// if insertSequence is given, compute pullUp labels, otherwise pullUp has no effect
+			if (context.insertLength > 0 && pullUp.CanPullUp(context)) {
+				CodeInstruction pullUpInstruction = context.instructions[context.postfixIndex];
+				newFirstInstructionLabels.AddRange(pullUpInstruction.labels);
+				pullUpInstruction.labels.Clear();
+			}
+
+			if (context.replaceLength > 0) {
 				// if targetSequence is given, its labels must be moved somewhere
-				int targetIndex = index + prefixLength;
-				int postfixIndex = index + prefixLength + replaceLength;
-				List<Label> targetSequenceLabels = InstructionUtils.FindAllLabels(instructions, targetIndex, postfixIndex);
-
-				if (insertLength > 0) {
-					// push labels onto insertSequence
-					updatedInsertSequence[0].labels.AddRange(targetSequenceLabels);
-				} else if (postfixIndex < instructions.Count) {
-					// push labels onto postfixSequence (even if none was specified explicitly)
-					// note that pullUp must be done BEFORE this
-					instructions[postfixIndex].labels.AddRange(targetSequenceLabels);
-				} else {
-					// create new NoOp instruction to push labels onto
-					CodeInstruction noOpInstruction = new CodeInstruction(OpCodes.Nop);
-					noOpInstruction.labels.AddRange(targetSequenceLabels);
-					updatedInsertSequence.Add(noOpInstruction);
-				}
+				List<Label> targetSequenceLabels = InstructionUtils.FindAllLabels(context.instructions, context.replaceIndex, context.postfixIndex);
+				newFirstInstructionLabels.AddRange(targetSequenceLabels);
 			}
 
-			return updatedInsertSequence;
+			return newFirstInstructionLabels;
 		}
 
 	}
