@@ -70,6 +70,8 @@
         <Compile Include="src\internal\ITranspilerPatch.cs" />
         <Compile Include="src\internal\MidFixCodeGenerator.cs" />
         <Compile Include="src\internal\MidFixPatcher.cs" />
+        <Compile Include="src\LoggingUtils\InstructionTableBuilder.cs" />
+        <Compile Include="src\LoggingUtils\TextTableBuilder.cs" />
         <Compile Include="src\MidFixPatch\BTHarmonyMidFix.cs" />
         <Compile Include="src\MidFixPatch\MidFixInstructionMatcher.cs" />
         <Compile Include="src\PatcherUtils.cs" />
