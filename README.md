@@ -13,3 +13,9 @@ Let's have a look at its features.
 |[MethodBodyReader](https://github.com/BlazingTwist/BTHarmonyUtils/wiki/Method-Body-Reader)|<span style="font-size: 0.8em">🔴🔴🔴</span>|If you, for some reason, want to read the Instructions of a Method without Patching it with a Transpiler, this is for you.<br/>As an example: you could dynamically extract part of an existing Method into a separate Method.|
 |[ByteBuffer](https://github.com/BlazingTwist/BTHarmonyUtils/wiki/Byte-Buffer)|<span style="font-size: 0.8em">🔴🔴</span>|Allows you to read built-in value types from an Array of Bytes.<br/>Main use-case is reading compressed data from Save-Files or Memory.|
 |[TableBuilders](https://github.com/BlazingTwist/BTHarmonyUtils/wiki/Table-Builders)|<span style="font-size: 0.8em">🔴</span>|Allows you to easy to read tables to log files or other places.|
+
+## VS Snippets
+
+'HarmonySnippetsForVS.snippet' contains Midfix, Prefix, Postfix and Transpiler Snippets for Visual Studio.  
+You can import them by pressing 'ctrl+k' -> 'ctrl+b' and clicking on 'Import'.
+To load a snippet, press 'ctrl+k' -> 'ctrl+x' and select the snippet.
