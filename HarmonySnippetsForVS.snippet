@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+    <CodeSnippet Format="1.0.0">
+        <Header>
+            <Title>Transpiler</Title>
+			<Description>Harmony Transpiler</Description>
+        </Header>
+        <Snippet>
+            <Code Language="CSharp">
+                <![CDATA[
+[HarmonyPatch(methodName: nameof($TypeName$.$MethodName$))]
+[HarmonyTranspiler]
+private static IEnumerable<CodeInstruction> $MethodName$_Transpiler(IEnumerable<CodeInstruction> codeInstructions) {
+	List<CodeInstruction> instructions = codeInstructions.ToList();
+    
+    CodeReplacementPatch patch = new CodeReplacementPatch(
+        expectedMatches: 1,
+    );
+    patch.ApplySafe(instructions, logger);
+    
+    return instructions;
+}
+				]]>
+            </Code>
+			<Declarations>
+				<Literal>
+					<ID>TypeName</ID>
+					<ToolTip>Name of the Type containing the patched Method</ToolTip>
+					<Default>TypeName</Default>
+				</Literal>
+				<Literal>
+					<ID>MethodName</ID>
+					<ToolTip>Name of the patched Method</ToolTip>
+					<Default>MethodName</Default>
+				</Literal>
+			</Declarations>
+        </Snippet>
+    </CodeSnippet>
+	<CodeSnippet Format="1.0.0">
+        <Header>
+            <Title>MidFix</Title>
+			<Description>BTHU MidFix</Description>
+        </Header>
+        <Snippet>
+            <Code Language="CSharp">
+                <![CDATA[
+[HarmonyPatch(methodName: nameof($TypeName$.$MethodName$))]
+[BTHarmonyMidFix(nameof($MethodName$_Matcher))]
+private static bool $MethodName$_MidFix() {
+    return true;
+}
+
+private static MidFixInstructionMatcher $MethodName$_Matcher() {
+    return new MidFixInstructionMatcher(
+        expectedMatches: 1,
+    );
+}
+				]]>
+            </Code>
+			<Declarations>
+				<Literal>
+					<ID>TypeName</ID>
+					<ToolTip>Name of the Type containing the patched Method</ToolTip>
+					<Default>TypeName</Default>
+				</Literal>
+				<Literal>
+					<ID>MethodName</ID>
+					<ToolTip>Name of the patched Method</ToolTip>
+					<Default>MethodName</Default>
+				</Literal>
+			</Declarations>
+        </Snippet>
+    </CodeSnippet>
+	<CodeSnippet Format="1.0.0">
+        <Header>
+            <Title>Prefix</Title>
+			<Description>Harmony Prefix</Description>
+        </Header>
+        <Snippet>
+            <Code Language="CSharp">
+                <![CDATA[
+[HarmonyPatch(methodName: nameof($TypeName$.$MethodName$))]
+[HarmonyPrefix]
+private static bool $MethodName$_Prefix() {
+    return true;
+}
+				]]>
+            </Code>
+			<Declarations>
+				<Literal>
+					<ID>TypeName</ID>
+					<ToolTip>Name of the Type containing the patched Method</ToolTip>
+					<Default>TypeName</Default>
+				</Literal>
+				<Literal>
+					<ID>MethodName</ID>
+					<ToolTip>Name of the patched Method</ToolTip>
+					<Default>MethodName</Default>
+				</Literal>
+			</Declarations>
+        </Snippet>
+    </CodeSnippet>
+	<CodeSnippet Format="1.0.0">
+        <Header>
+            <Title>Postfix</Title>
+			<Description>Harmony Postfix</Description>
+        </Header>
+        <Snippet>
+            <Code Language="CSharp">
+                <![CDATA[
+[HarmonyPatch(methodName: nameof($TypeName$.$MethodName$))]
+[HarmonyPostfix]
+private static void $MethodName$_Postfix() {
+    
+}
+				]]>
+            </Code>
+			<Declarations>
+				<Literal>
+					<ID>TypeName</ID>
+					<ToolTip>Name of the Type containing the patched Method</ToolTip>
+					<Default>TypeName</Default>
+				</Literal>
+				<Literal>
+					<ID>MethodName</ID>
+					<ToolTip>Name of the patched Method</ToolTip>
+					<Default>MethodName</Default>
+				</Literal>
+			</Declarations>
+        </Snippet>
+    </CodeSnippet>
+</CodeSnippets>
