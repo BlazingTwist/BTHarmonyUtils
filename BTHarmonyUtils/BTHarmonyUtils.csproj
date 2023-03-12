@@ -9,7 +9,7 @@
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace>BTHarmonyUtils</RootNamespace>
         <AssemblyName>BTHarmonyUtils</AssemblyName>
-        <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+        <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -44,10 +44,6 @@
         <Reference Include="BepInEx.Harmony, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
             <HintPath>..\BepInEx_Dependencies\BepInEx.Harmony.dll</HintPath>
         </Reference>
-        <Reference Include="JetBrains.Annotations, Version=2021.2.0.0, Culture=neutral, PublicKeyToken=1010a0d8d6380325">
-            <HintPath>..\packages\JetBrains.Annotations.2021.2.0\lib\net20\JetBrains.Annotations.dll</HintPath>
-            <Private>True</Private>
-        </Reference>
         <Reference Include="Mono.Cecil, Version=0.10.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e">
             <HintPath>..\BepInEx_Dependencies\Mono.Cecil.dll</HintPath>
         </Reference>
@@ -55,9 +51,13 @@
         <Reference Include="System.Core" />
         <Reference Include="System.Data" />
         <Reference Include="System.Xml" />
+        <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+          <HintPath>..\BepInEx_Dependencies\UnityEngine.dll</HintPath>
+        </Reference>
     </ItemGroup>
     <ItemGroup>
         <Compile Include="Properties\AssemblyInfo.cs" />
+        <Compile Include="src\BTHarmonyUtilsPlugin.cs" />
         <Compile Include="src\ILUtils\ByteBuffer.cs" />
         <Compile Include="src\ILUtils\InstructionSimplifier.cs" />
         <Compile Include="src\ILUtils\InstructionUtils.cs" />
@@ -70,6 +70,7 @@
         <Compile Include="src\internal\ITranspilerPatch.cs" />
         <Compile Include="src\internal\MidFixCodeGenerator.cs" />
         <Compile Include="src\internal\MidFixPatcher.cs" />
+        <Compile Include="src\internal\Tuple.cs" />
         <Compile Include="src\LoggingUtils\InstructionTableBuilder.cs" />
         <Compile Include="src\LoggingUtils\TextTableBuilder.cs" />
         <Compile Include="src\MidFixPatch\BTHarmonyMidFix.cs" />

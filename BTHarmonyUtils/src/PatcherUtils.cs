@@ -86,9 +86,9 @@ namespace BTHarmonyUtils {
 
 			foreach (MethodInfo method in type.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)) {
 				HarmonyMethod methodPatchInfo = classPatchInfo.Merge(GetHarmonyInfo(method));
-				BTHarmonyMidFix midFixAttribute = method.GetCustomAttribute<BTHarmonyMidFix>(false);
-				if (midFixAttribute != null) {
-					MidFixPatcher.DoPatch(harmony, methodPatchInfo, method, midFixAttribute);
+				Attribute[] midFixAttributes = Attribute.GetCustomAttributes(method, typeof(BTHarmonyMidFix), false);
+				foreach (Attribute midFixAttribute in midFixAttributes) {
+					MidFixPatcher.DoPatch(harmony, methodPatchInfo, method, (BTHarmonyMidFix) midFixAttribute);
 				}
 			}
 		}
@@ -122,8 +122,8 @@ namespace BTHarmonyUtils {
 		internal static IEnumerable<MethodBase> ResolveTargetMethod(Type declaringType) {
 			List<MethodBase> targetMethods = new List<MethodBase>();
 			foreach (MethodInfo method in declaringType.GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)) {
-				HarmonyTargetMethod targetMethodAttribute = method.GetCustomAttribute<HarmonyTargetMethod>(false);
-				HarmonyTargetMethods targetMethodsAttribute = method.GetCustomAttribute<HarmonyTargetMethods>(false);
+				HarmonyTargetMethod targetMethodAttribute = (HarmonyTargetMethod) Attribute.GetCustomAttribute(method, typeof(HarmonyTargetMethod), false);
+				HarmonyTargetMethods targetMethodsAttribute = (HarmonyTargetMethods) Attribute.GetCustomAttribute(method, typeof(HarmonyTargetMethods), false);
 				if (targetMethodAttribute == null && targetMethodsAttribute == null) {
 					continue;
 				}
@@ -165,8 +165,8 @@ namespace BTHarmonyUtils {
 					}
 				} else {
 					if (!typeof(IEnumerable<MethodBase>).IsAssignableFrom(method.ReturnType)
-							|| method.ReturnType.GenericTypeArguments.Length <= 0
-							|| !typeof(MethodBase).IsAssignableFrom(method.ReturnType.GenericTypeArguments[0])) {
+							|| GetGenericTypeArguments(method.ReturnType).Length <= 0
+							|| !typeof(MethodBase).IsAssignableFrom(GetGenericTypeArguments(method.ReturnType)[0])) {
 						LogTargetMethodInvalidDeclaration(declaringType, method, "but does not return 'IEnumerable<MethodBase>'", false);
 						continue;
 					}
@@ -179,6 +179,10 @@ namespace BTHarmonyUtils {
 				}
 			}
 			return targetMethods.Count <= 0 ? null : targetMethods;
+		}
+
+		private static Type[] GetGenericTypeArguments(Type t) {
+			return t.IsGenericType && !t.IsGenericTypeDefinition ? t.GetGenericArguments() : Type.EmptyTypes;
 		}
 
 		/// <summary>

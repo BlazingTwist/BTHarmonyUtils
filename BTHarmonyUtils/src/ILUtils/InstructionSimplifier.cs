@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Emit;
+using BTHarmonyUtils.@internal;
 using HarmonyLib;
 using JetBrains.Annotations;
 

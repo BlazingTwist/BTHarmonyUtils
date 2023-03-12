@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 using BTHarmonyUtils.ILUtils;
+using BTHarmonyUtils.@internal;
 using HarmonyLib;
 using JetBrains.Annotations;
 

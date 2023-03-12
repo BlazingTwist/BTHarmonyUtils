@@ -98,7 +98,7 @@ namespace BTHarmonyUtils.LoggingUtils {
      			public void Build(StringBuilder builder, int[] columnWidths) {
      				string lineSeparatorString = string.Join(
      						"" + COL_SEPARATOR_CHAR,
-     						columnWidths.Select(colWidth => new string(separatorChar, COL_PADDING_LEFT + COL_PADDING_RIGHT + colWidth))
+     						columnWidths.Select(colWidth => new string(separatorChar, COL_PADDING_LEFT + COL_PADDING_RIGHT + colWidth)).ToArray()
      				);
      				builder.Append("|").Append(lineSeparatorString).Append("|\n");
      			}

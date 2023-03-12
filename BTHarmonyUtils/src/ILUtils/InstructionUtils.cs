@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using BTHarmonyUtils.InstructionSearch;
+using BTHarmonyUtils.@internal;
 using HarmonyLib;
 using JetBrains.Annotations;
 

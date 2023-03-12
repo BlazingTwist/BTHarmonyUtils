@@ -42,10 +42,10 @@ namespace BTHarmonyUtils.LoggingUtils {
 		}
 
 		private static string LabelsToString(IEnumerable<Label> labels) {
-			return string.Join(", ", labels.Select(label => label.GetHashCode()));
+			return string.Join(", ", labels.Select(label => label.GetHashCode().ToString()).ToArray());
 		}
 
-		private static List<List<T>> GetAsBatches<T>(IReadOnlyList<T> enumerable, int batchSize) {
+		private static List<List<T>> GetAsBatches<T>(List<T> enumerable, int batchSize) {
 			List<List<T>> batches = new List<List<T>>();
 
 			int enumerableCount = enumerable.Count;
