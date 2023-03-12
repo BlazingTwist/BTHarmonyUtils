@@ -14,16 +14,21 @@ namespace BTHarmonyUtils {
 		/// BTHU plugin guid
 		/// </summary>
 		public const string pluginGuid = "blazingtwist.harmonyutils";
-		
+
 		/// <summary>
 		/// BTHU plugin display-name
 		/// </summary>
 		public const string pluginName = "BT Harmony Utils";
-		
+
 		/// <summary>
 		/// BTHU plugin version
 		/// </summary>
 		public const string pluginVersion = "0.2.0";
+
+		/// <summary>
+		/// The oldest version that is backwards-compatible with this version.
+		/// </summary>
+		public const string minCompatibleVersion = "0.2.0";
 
 	}
 
